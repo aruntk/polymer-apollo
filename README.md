@@ -16,7 +16,7 @@
 ```javascript
 //config.js
 import ApolloClient, { createNetworkInterface, addTypename } from './apollo-client';
-import PolymerApollo from 'vue-apollo';
+import PolymerApollo from 'polymer-apollo';
 
 // Create the apollo client
 const apolloClient = new ApolloClient({
@@ -27,7 +27,7 @@ const apolloClient = new ApolloClient({
   queryTransformer: addTypename,
 });
 
-// Install the vue plugin
+//create a new polymer behavior from PolymerApollo class. 
 export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
 ```
 
@@ -107,7 +107,7 @@ export const resolvers = {
 
 For more info, visit the [apollo doc](http://dev.apollodata.com/tools/).
 
-You can then use your property as usual in your vue component:
+You can then use your property as usual in your polymer component:
 
 ```html
 <!--my-element.js-->
@@ -140,7 +140,7 @@ apollo: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    // Static parameters
+    // Reactive parameters
     variables: {
       message: 'property.path',
     },
@@ -175,7 +175,7 @@ apollo: {
 },
 ```
 
-Don't forget to initialize your property in your vue component:
+Don't forget to initialize your property in your polymer component:
 
 ```javascript
 //my-element.js
@@ -209,7 +209,7 @@ export const resolvers = {
 };
 ```
 
-And then use it in your vue component:
+And then use it in your polymer component:
 
 ```html
 <dom-module id="my-element">
@@ -235,7 +235,6 @@ These are the available advanced options you can use:
 // Apollo-specific options
 apollo: {
   // Advanced query with parameters
-  // The 'variables' method is watched by vue
   pingMessage: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
@@ -270,7 +269,7 @@ Here is a reactive query example using polling:
 ```javascript
 // Apollo-specific options
 apollo: {
-  // 'tags' data property on vue instance
+  // 'tags' property of your polymer element
   tags: {
     query: gql`query tagList {
       tags {
