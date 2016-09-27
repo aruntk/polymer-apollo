@@ -2,7 +2,7 @@
   "name": "polymer-apollo",
   "version": "1.0.0-beta.1",
   "description": "Polymer Apollo Integration",
-  "main": "polymer-apollo.js",
+  "main": "src/polymer-apollo.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
