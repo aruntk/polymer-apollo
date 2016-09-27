@@ -1,8 +1,453 @@
-# polymer-apollo
+# Polymer-Apollo
 
-Polymer Apollo integration
+[polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
-front page app
-https://github.com/aruntk/polymer-apollo-frontpage
+[polymer apollo frontpage app](https://github.com/aruntk/polymer-apollo-frontpage)
 
-inspired from Guillaume Chau's [vue-apollo integration](https://github.com/Akryum/vue-apollo)
+## Installation
+
+
+    npm install --save polymer-apollo apollo-client
+
+## Usage
+
+### Configuration
+
+```javascript
+//config.js
+import ApolloClient, { createNetworkInterface, addTypename } from './apollo-client';
+import PolymerApollo from 'vue-apollo';
+
+// Create the apollo client
+const apolloClient = new ApolloClient({
+  networkInterface: createNetworkInterface({
+    uri: 'http://localhost:8080/graphql',
+    transportBatching: true,
+  }),
+  queryTransformer: addTypename,
+});
+
+// Install the vue plugin
+export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
+```
+
+### Usage in components
+
+To declare apollo queries in your polymer component, add an `apollo` object :
+
+```javascript
+//my-element.js
+import {PolymerApolloBehavior} from "./config.js";
+Polymer({
+    is:"my-element",
+    behaviors:[PolymerApolloBehavior],
+    apollo: {
+        // Apollo specific options
+    },
+    ...
+});
+```
+
+You can access the [apollo-client](http://dev.apollodata.com/core/apollo-client-api.html) instance with `this.$apollo.client` in all your polymer components.
+
+### Queries
+
+In the `apollo` object, add an attribute for each property you want to feed with the result of an Apollo query.
+
+#### Simple query
+
+Use `gql` to write your GraphQL queries:
+
+```javascript
+import gql from 'graphql-tag';
+```
+
+Put the [gql](http://docs.apollostack.com/apollo-client/core.html#gql) query directly as the value:
+
+```javascript
+apollo: {
+  // Simple query that will update the 'hello' polymer property
+  hello: gql`{hello}`,
+},
+```
+
+Don't forget to initialize your property in your polymer component:
+
+```javascript
+//my-element.js
+...
+properties : {
+    // Initialize your apollo data
+    hello: String,
+},
+...
+```
+
+Server-side, add the corresponding schema and resolver:
+
+```javascript
+export const schema = `
+type Query {
+  hello: String
+}
+
+schema {
+  query: Query
+}
+`;
+
+export const resolvers = {
+  Query: {
+    hello(root, args, context) {
+      return "Hello world!";
+    },
+  },
+};
+```
+
+For more info, visit the [apollo doc](http://dev.apollodata.com/tools/).
+
+You can then use your property as usual in your vue component:
+
+```html
+<!--my-element.js-->
+<dom-module id="my-element">
+<template>
+  <div class="apollo">
+    <h3>Hello</h3>
+    <p>
+      {{hello}}
+    </p>
+  </div>
+</template>
+</dom-module>
+```
+
+#### Query with parameters
+
+You can add variables (read parameters) to your `gql` query by declaring `query` and `variables` in an object:
+
+Variable values are paths to Polymer element properties. 
+
+eg `variables:{limit:"route.limit"}` . In this graphql variable limit changes when the polymer property route.limit changes (similar to observer);
+
+```javascript
+// Apollo-specific options
+apollo: {
+  // Query with parameters
+  ping: {
+    // gql query
+    query: gql`query PingMessage($message: String!) {
+      ping(message: $message)
+    }`,
+    // Static parameters
+    variables: {
+      message: 'property.path',
+    },
+  },
+},
+```
+
+You can use the apollo `watchQuery` options in the object, like:
+ - `forceFetch`
+ - `fragments`
+ - `returnPartialData`
+ - `pollInterval`
+ - ...
+
+See the [apollo doc](http://dev.apollodata.com/core/apollo-client-api.html#ApolloClient\.watchQuery) for more details.
+
+For example, you could add the `forceFetch` apollo option like this:
+
+```javascript
+apollo: {
+  // Query with parameters
+  ping: {
+    query: gql`query PingMessage($message: String!) {
+      ping(message: $message)
+    }`,
+    variables: {
+      message: 'property.path'
+    },
+    // Additional options here
+    forceFetch: true,
+  },
+},
+```
+
+Don't forget to initialize your property in your vue component:
+
+```javascript
+//my-element.js
+...
+properties {
+    // Initialize your apollo data
+    ping: String,
+},
+...
+```
+
+Server-side, add the corresponding schema and resolver:
+
+```javascript
+export const schema = `
+type Query {
+  ping(message: String!): String
+}
+
+schema {
+  query: Query
+}
+`;
+
+export const resolvers = {
+  Query: {
+    ping(root, { message }, context) {
+      return `Answering ${message}`;
+    },
+  },
+};
+```
+
+And then use it in your vue component:
+
+```html
+<dom-module id="my-element">
+<template>
+  <div class="apollo">
+    <h3>Ping</h3>
+    <p>
+      {{ping}}
+    </p>
+  </div>
+</template>
+</dom-module>
+```
+#### Advanced options
+
+These are the available advanced options you can use:
+- `error(error)` is a hook called when there are errors, `error` being an Apollo error object with either a `graphQLErrors` property or a `networkError` property.
+- `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`. 
+- `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
+
+
+```javascript
+// Apollo-specific options
+apollo: {
+  // Advanced query with parameters
+  // The 'variables' method is watched by vue
+  pingMessage: {
+    query: gql`query PingMessage($message: String!) {
+      ping(message: $message)
+    }`,
+    // Reactive parameters
+    variables: {
+      // observes propery changes
+      message: "propety.path",
+    },
+    // Error handling
+    error(error) {
+      console.error('We\'ve got an error!', error);
+    },
+    // Loading state
+    // loadingKey is the name of the data property
+    // that will be incremented when the query is loading
+    // and decremented when it no longer is.
+    loadingKey: 'loadingQueriesCount',
+    // watchLoading will be called whenever the loading state changes
+    watchLoading(isLoading) {
+      // isLoading is a boolean
+      // countModifier is either 1 or -1
+    },
+  },
+},
+```
+
+### Reactive Query Example
+
+Here is a reactive query example using polling:
+
+```javascript
+// Apollo-specific options
+apollo: {
+  // 'tags' data property on vue instance
+  tags: {
+    query: gql`query tagList {
+      tags {
+        id,
+        label
+      }
+    }`,
+    pollInterval: 300, // ms
+  },
+},
+```
+
+Here is how the server-side looks like:
+
+```javascript
+export const schema = `
+type Tag {
+  id: Int
+  label: String
+}
+
+type Query {
+  tags: [Tag]
+}
+
+schema {
+  query: Query
+}
+`;
+
+// Fake word generator
+import casual from 'casual';
+
+// Let's generate some tags
+var id = 0;
+var tags = [];
+for (let i = 0; i < 42; i++) {
+  addTag(casual.word);
+}
+
+function addTag(label) {
+  let t = {
+    id: id++,
+    label,
+  };
+  tags.push(t);
+  return t;
+}
+
+export const resolvers = {
+  Query: {
+    tags(root, args, context) {
+      return tags;
+    },
+  },
+};
+```
+
+### Mutations
+
+Mutations are queries that changes your data state on your apollo server. For more info, visit the [apollo doc](http://dev.apollodata.com/core/apollo-client-api.html#ApolloClient\.mutate).
+
+```javascript
+  addTag() {
+    // We save the user input in case of an error
+    const newTag = this.newTag;
+    // We clear it early to give the UI a snappy feel
+    this.newTag = '';
+    // Call to the graphql mutation
+    this.$apollo.mutate({
+      // Query
+      mutation: gql`mutation ($label: String!) {
+        addTag(label: $label) {
+          id
+          label
+        }
+      }`,
+      // Parameters
+      variables: {
+        label: newTag,
+      },
+      // Update the cache with the result
+      // 'tagList' is the name of the query declared before
+      // that will be updated with the optimistic response
+      // and the result of the mutation
+      updateQueries: {
+        tagList: (previousQueryResult, { mutationResult }) => {
+          // We incorporate any received result (either optimistic or real)
+          // into the 'tagList' query we set up earlier
+          return {
+            tags: [...previousQueryResult.tags, mutationResult.data.addTag],
+          };
+        },
+      },
+      // Optimistic UI
+      // Will be treated as a 'fake' result as soon as the request is made
+      // so that the UI can react quickly and the user be happy
+      optimisticResponse: {
+        __typename: 'Mutation',
+        addTag: {
+          __typename: 'Tag',
+          id: -1,
+          label: newTag,
+        },
+      },
+    }).then((data) => {
+      // Result
+      console.log(data);
+    }).catch((error) => {
+      // Error
+      console.error(error);
+      // We restore the initial user input
+      this.set("newTag",newTag);
+    });
+  },
+},
+```
+
+Server-side:
+
+```javascript
+export const schema = `
+type Tag {
+  id: Int
+  label: String
+}
+
+type Query {
+  tags: [Tag]
+}
+
+type Mutation {
+  addTag(label: String!): Tag
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+`;
+
+// Fake word generator
+import faker from 'faker';
+
+// Let's generate some tags
+var id = 0;
+var tags = [];
+for (let i = 0; i < 42; i++) {
+  addTag(faker.random.word());
+}
+
+function addTag(label) {
+  let t = {
+    id: id++,
+    label,
+  };
+  tags.push(t);
+  return t;
+}
+
+export const resolvers = {
+  Query: {
+    tags(root, args, context) {
+      return tags;
+    },
+  },
+  Mutation: {
+    addTag(root, { label }, context) {
+      console.log(`adding tag '${label}'`);
+      return addTag(label);
+    },
+  },
+};
+```
+
+---
+
+Created by Arun Kumar T K (@aruntk)
+
+Inspired from Guillaume Chau's [vue-apollo](https://github.com/Akryum/vue-apollo) project
