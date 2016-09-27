@@ -1,0 +1,23 @@
+{
+  "name": "polymer-apollo",
+  "version": "1.0.0-beta.1",
+  "description": "Polymer Apollo Integration",
+  "main": "polymer-apollo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aruntk/polymer-apollo.git"
+  },
+  "keywords": [
+    "polymer",
+    "apollo"
+  ],
+  "author": "Arun Kumar T K",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aruntk/polymer-apollo/issues"
+  },
+  "homepage": "https://github.com/aruntk/polymer-apollo#readme"
+}
