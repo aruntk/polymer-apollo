@@ -449,4 +449,4 @@ export const resolvers = {
 
 Created by Arun Kumar T K (@aruntk)
 
-Inspired from Guillaume Chau's [vue-apollo](https://github.com/Akryum/vue-apollo) project
+Inspired by Guillaume Chau's [vue-apollo](https://github.com/Akryum/vue-apollo) project
