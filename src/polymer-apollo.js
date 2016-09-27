@@ -211,8 +211,8 @@ class DollarApollo {
       el.observers = el.observers || [];
       el.observers.push(`__apollo_${rand}(${_var})`);
       const prop = deepFind(el.properties,_var);
-      if(prop === undefined){
-        _var = prop.value; 
+      if(prop !== undefined){
+        _var = prop; 
       }
       else{
         console.error(`Missing "${i}" in properties`);
