@@ -30,7 +30,7 @@ export class PolymerApollo {
 
       // watchQuery
       for (let key in queries) {
-        this.$apollo.option(key, queries[key]);
+        this.$apollo.process(key, queries[key]);
 
       }
 
@@ -92,16 +92,16 @@ class DollarApollo {
   processObservers (el) {
     // Create subscription
     const $apollo = this;
-    _.map(el._apolloObservers,({key,observer,options,variables})=>{
-      $apollo._subscribeObservers(key,observer,options,variables,el);
+    _.map(el._apolloObservers,({key,options,observer})=>{
+      $apollo._subscribeObservers(key,options,observer,el);
     }); 
   }
-  _subscribeObservers(key,observer,options,variables,el){
+  _subscribeObservers(key,options,observer,el){
     let firstLoadingDone = false;
-
+    this.el = el;
     let loadingKey = options.loadingKey;
     let loadingChangeCb = options.watchLoading;
-    applyLoadingModifier(1);
+    this._changeLoader(loadingKey,true,loadingChangeCb);
     if (typeof loadingChangeCb === 'function') {
       loadingChangeCb = loadingChangeCb.bind(el);
     }
@@ -109,21 +109,13 @@ class DollarApollo {
       next: nextResult,
       error: catchError
     });
+    const $apollo = this;
     function nextResult({ data }) {
-      applyData(data);
+      $apollo._changeLoader(loadingKey,false,loadingChangeCb);
+      $apollo._applyData(data,key);
     }
-
-    function applyData(data) {
-      loadingDone();
-      if (data[key] === undefined) {
-        console.error(`Missing "${key}" in properties`, data);
-      } else {
-        el[key] = data[key];
-      }
-    }
-
     function catchError(error) {
-      loadingDone();
+      $apollo._changeLoader(loadingKey,false,loadingChangeCb);
 
       if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
         console.error(`GraphQL execution errors for query ${query}`);
@@ -140,73 +132,76 @@ class DollarApollo {
         options.error(error);
       }
     }
-    function applyLoadingModifier(value) {
-      if (loadingKey) {
-        el[loadingKey] += value;
-      }
-
-      if (loadingChangeCb) {
-        loadingChangeCb(value === 1, value);
-      }
-    }
-
-    function loadingDone() {
-      if (!firstLoadingDone) {
-        applyLoadingModifier(-1);
-        firstLoadingDone = true;
-      }
-    }
-
 
 
   }
 
-  option(key, options) {
+  _applyData(data,key) {
+    if (data[key] === undefined) {
+      console.error(`Missing "${key}" in properties`, data);
+    } else {
+      this.el[key] = data[key];
+    }
+  }
+
+  _changeLoader(loadingKey,value,loadingChangeCb) {
+    if (loadingKey) {
+      this.el[loadingKey] = value;
+    }
+
+    if (loadingChangeCb) {
+      loadingChangeCb(value);
+    }
+  }
+
+  _processVariables(key,options,sub,observer){
+    let variables = options.variables;
+    if (options.forceFetch && observer) {
+      // Refresh query
+      observer.refetch(variables, {
+        forceFetch: !!options.forceFetch
+      });
+    } else {
+      if (sub) {
+        sub.unsubscribe();
+      }
+
+      // Create observer
+      observer = this.watchQuery(this._generateApolloOptions(options));
+      this.el._apolloObservers.push({key:key,observer:observer,variables:variables,options:options});
+
+    }
+    return observer;
+  }
+  _generateApolloOptions(options) {
+    const apolloOptions = _.omit(options, [
+      'error',
+      'loadingKey',
+      'watchLoading',
+    ]);
+    return apolloOptions;
+  }
+
+
+  process(key, options) {
     const el = this.el;
     const $apollo = this;
-
     let query, observer, sub;
 
     // Simple query
     if (!options.query) {
       query = options;
     }
-    function generateApolloOptions(variables) {
-      const apolloOptions = _.omit(options, [
-        'variables',
-        'error',
-        'loadingKey',
-        'watchLoading',
-      ]);
-      apolloOptions.variables = variables;
-      return apolloOptions;
-    }
 
-    function q(variables) {
-      if (options.forceFetch && observer) {
-        // Refresh query
-        observer.refetch(variables, {
-          forceFetch: !!options.forceFetch
-        });
-      } else {
-        if (sub) {
-          sub.unsubscribe();
-        }
+    observer = this._processVariables(key,options,sub,observer);
 
-        // Create observer
-        observer = $apollo.watchQuery(generateApolloOptions(variables));
-        el._apolloObservers.push({key:key,observer:observer,variables:variables,options:options});
-
-      }
-    }
     for(let i in options.variables){
       let _var = options.variables[i];
       const rand = Math.floor(1000000000 + Math.random() * 9000000000);
       const r_id = `__apollo_${rand}`;
-      el[r_id] = (newValue)=>{
-        const opt = options;
-        opt.variables[i] = newValue;
-        q(opt.variables);
+      el[r_id] = function(newValue){
+        options.variables[i] = newValue;
+        $apollo._subscribeObservers(key,options,observer,this);
       }
       el.observers = el.observers || [];
       el.observers.push(`__apollo_${rand}(${_var})`);
@@ -219,7 +214,6 @@ class DollarApollo {
       //}
       options.variables[i] = _var;
     }
-    q(options.variables);
 
   }
 }
