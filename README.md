@@ -33,6 +33,8 @@ export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
 
 ### Usage in components
 
+Add the created behavior in your element's behaviors array
+
 To declare apollo queries in your polymer component, add an `apollo` object :
 
 ```javascript
