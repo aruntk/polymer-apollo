@@ -1,4 +1,18 @@
 import _ from 'lodash';
+function deepFind(obj, path) {
+  var paths = path.split('.')
+    , current = obj
+    , i;
+
+  for (i = 0; i < paths.length; ++i) {
+    if (current[paths[i]] == undefined) {
+      return undefined;
+    } else {
+      current = current[paths[i]];
+    }
+  }
+  return current;
+}
 export class PolymerApollo {
   constructor(options){
     this._apolloClient = options.apolloClient;
@@ -196,12 +210,12 @@ class DollarApollo {
       }
       el.observers = el.observers || [];
       el.observers.push(`__apollo_${rand}(${_var})`);
-      const prop = el.properties[i];
-      if(prop){
+      const prop = deepFind(el.properties,_var);
+      if(prop === undefined){
         _var = prop.value; 
       }
       else{
-        console.error(`Missing "${i}" in properties`, data);
+        console.error(`Missing "${i}" in properties`);
       }
       options.variables[i] = _var;
     }
