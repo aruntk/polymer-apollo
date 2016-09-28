@@ -1,6 +1,7 @@
-import _ from 'lodash';
+import { _omit } from 'lodash.omit';
+import { _map } from 'lodash.map';
 function deepFind(obj, path) {
-  var paths = path.split('.')
+  let paths = path.split('.')
     , current = obj
     , i;
 
@@ -24,7 +25,7 @@ export class PolymerApollo {
     this.$apollo = new DollarApollo(this);
 
     if (apollo) {
-      const queries = _.omit(apollo, [
+      const queries = _omit(apollo, [
         'subscribe',
       ]);
 
@@ -92,7 +93,7 @@ class DollarApollo {
   processObservers (el) {
     // Create subscription
     const $apollo = this;
-    _.map(el._apolloObservers,({key,options,observer})=>{
+    _map(el._apolloObservers,({key,options,observer})=>{
       $apollo._subscribeObservers(key,options,observer,el);
     }); 
   }
@@ -174,7 +175,7 @@ class DollarApollo {
     return observer;
   }
   _generateApolloOptions(options) {
-    const apolloOptions = _.omit(options, [
+    const apolloOptions = _omit(options, [
       'error',
       'loadingKey',
       'watchLoading',
