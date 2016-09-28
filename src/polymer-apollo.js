@@ -1,5 +1,5 @@
-import { omit } from 'lodash.omit';
-import { map } from 'lodash.map';
+import omit from 'lodash.omit';
+import map from 'lodash.map';
 function deepFind(obj, path) {
   let paths = path.split('.')
     , current = obj
