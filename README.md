@@ -16,7 +16,7 @@
 ```javascript
 //config.js
 import ApolloClient, { createNetworkInterface, addTypename } from './apollo-client';
-import PolymerApollo from 'polymer-apollo';
+import { PolymerApollo } from 'polymer-apollo';
 
 // Create the apollo client
 const apolloClient = new ApolloClient({
@@ -39,10 +39,10 @@ To declare apollo queries in your polymer component, add an `apollo` object :
 
 ```javascript
 //my-element.js
-import {PolymerApolloBehavior} from "./config.js";
+import { PolymerApolloBehavior } from "./config.js";
 Polymer({
     is:"my-element",
-    behaviors:[PolymerApolloBehavior],
+    behaviors:[ PolymerApolloBehavior ],
     apollo: {
         // Apollo specific options
     },
