@@ -1,9 +1,9 @@
 import omit from 'lodash.omit';
 import map from 'lodash.map';
 function deepFind(obj, path) {
-  let paths = path.split('.')
-    , current = obj
-    , i;
+  let paths = path.split('.'),
+    current = obj,
+    i;
 
   for (i = 0; i < paths.length; ++i) {
     if (current[paths[i]] == undefined) {
@@ -64,7 +64,7 @@ class DollarApollo {
   constructor(el) {
     this.el = el;
     this.querySubscriptions = {};
-    el._apolloObservers = [];
+    el.__apollo_store = {};
   }
 
   get client() {
@@ -93,13 +93,16 @@ class DollarApollo {
   processObservers (el) {
     // Create subscription
     const $apollo = this;
-    map(el._apolloObservers,({key,options,observer})=>{
-      $apollo._subscribeObservers(key,options,observer,el);
-    }); 
+this.el = el;
+    for(let i in el.__apollo_store){
+      const obj = el.__apollo_store[i];
+      $apollo._subscribeObservers(i,obj.options,obj.observer);
+
+    }
   }
-  _subscribeObservers(key,options,observer,el){
+  _subscribeObservers(key,options,observer){
     let firstLoadingDone = false;
-    this.el = el;
+    const el = this.el;
     let loadingKey = options.loadingKey;
     let loadingChangeCb = options.watchLoading;
     this._changeLoader(loadingKey,true,loadingChangeCb);
@@ -154,14 +157,47 @@ class DollarApollo {
       loadingChangeCb(value);
     }
   }
+  _refetch(key,options,variables,observer){
+    const  el = this.el;
+    let loadingKey = options.loadingKey;
+    let loadingChangeCb = options.watchLoading;
+    this._changeLoader(loadingKey,true,loadingChangeCb);
+    if (typeof loadingChangeCb === 'function') {
+      loadingChangeCb = loadingChangeCb.bind(el);
+    }
 
+    observer.refetch(variables, {
+      forceFetch: !!options.forceFetch
+    }).then(nextResult,catchError);
+    const $apollo = this;
+    function nextResult({ data }) {
+      $apollo._changeLoader(loadingKey,false,loadingChangeCb);
+      $apollo._applyData(data,key);
+    }
+    function catchError(error) {
+      $apollo._changeLoader(loadingKey,false,loadingChangeCb);
+
+      if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
+        console.error(`GraphQL execution errors for query ${query}`);
+        for (let e of error.graphQLErrors) {
+          console.error(e);
+        }
+      } else if (error.networkError) {
+        console.error(`Error sending the query ${query}`, error.networkError);
+      } else {
+        console.error(error);
+      }
+
+      if (typeof options.error === 'function') {
+        options.error(error);
+      }
+    }
+  }
   _processVariables(key,options,sub,observer){
     let variables = options.variables;
     if (options.forceFetch && observer) {
       // Refresh query
-      observer.refetch(variables, {
-        forceFetch: !!options.forceFetch
-      });
+      this._refetch(key,options,variables,observer);
     } else {
       if (sub) {
         sub.unsubscribe();
@@ -169,10 +205,14 @@ class DollarApollo {
 
       // Create observer
       observer = this.watchQuery(this._generateApolloOptions(options));
-      this.el._apolloObservers.push({key:key,observer:observer,variables:variables,options:options});
+      this.el.__apollo_store[key] = {observer,variables,options};
 
     }
     return observer;
+  }
+  refetch(key){
+    const obj = this.el.__apollo_store[key];
+    this._refetch(key,obj.options,obj.variables,obj.observer);
   }
   _generateApolloOptions(options) {
     const apolloOptions = omit(options, [
@@ -182,13 +222,10 @@ class DollarApollo {
     ]);
     return apolloOptions;
   }
-
-
   process(key, options) {
     const el = this.el;
     const $apollo = this;
     let query, observer, sub;
-
     // Simple query
     if (!options.query) {
       query = options;
@@ -202,8 +239,8 @@ class DollarApollo {
       const r_id = `__apollo_${rand}`;
       el[r_id] = function(newValue){
         options.variables[i] = newValue;
-        $apollo._subscribeObservers(key,options,observer,this);
-      }
+        $apollo._refetch(key,options,options.variables,observer);
+      };
       el.observers = el.observers || [];
       el.observers.push(`__apollo_${rand}(${_var})`);
       const prop = deepFind(el.properties,_var);
