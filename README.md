@@ -285,7 +285,7 @@ apollo: {
   },
 },
 refetchTags(){
-   this.$.apollo.refetch("tags");
+   this.$apollo.refetch("tags");
 }
 ```
 
