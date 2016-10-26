@@ -13,7 +13,7 @@
 
 ### Configuration
 
-```javascript
+```js
 //config.js
 import ApolloClient, { createNetworkInterface, addTypename } from './apollo-client';
 import { PolymerApollo } from 'polymer-apollo';
@@ -37,7 +37,7 @@ Add the created behavior in your element's behaviors array
 
 To declare apollo queries in your polymer component, add an `apollo` object :
 
-```javascript
+```js
 //my-element.js
 import { PolymerApolloBehavior } from "./config.js";
 Polymer({
@@ -60,13 +60,13 @@ In the `apollo` object, add an attribute for each property you want to feed with
 
 Use `gql` to write your GraphQL queries:
 
-```javascript
+```js
 import gql from 'graphql-tag';
 ```
 
 Put the [gql](http://docs.apollostack.com/apollo-client/core.html#gql) query directly as the value:
 
-```javascript
+```js
 apollo: {
   // Simple query that will update the 'hello' polymer property
   hello: gql`{hello}`,
@@ -75,7 +75,7 @@ apollo: {
 
 Don't forget to initialize your property in your polymer component:
 
-```javascript
+```js
 //my-element.js
 ...
 properties : {
@@ -87,7 +87,7 @@ properties : {
 
 Server-side, add the corresponding schema and resolver:
 
-```javascript
+```js
 export const schema = `
 type Query {
   hello: String
@@ -133,7 +133,7 @@ Variable values are paths to Polymer element properties.
 
 eg `variables:{limit:"route.limit"}` . In this graphql variable limit changes when the polymer property route.limit changes (similar to observer);
 
-```javascript
+```js
 // Apollo-specific options
 apollo: {
   // Query with parameters
@@ -161,7 +161,7 @@ See the [apollo doc](http://dev.apollodata.com/core/apollo-client-api.html#Apoll
 
 For example, you could add the `forceFetch` apollo option like this:
 
-```javascript
+```js
 apollo: {
   // Query with parameters
   ping: {
@@ -179,7 +179,7 @@ apollo: {
 
 Don't forget to initialize your property in your polymer component:
 
-```javascript
+```js
 //my-element.js
 ...
 properties {
@@ -191,7 +191,7 @@ properties {
 
 Server-side, add the corresponding schema and resolver:
 
-```javascript
+```js
 export const schema = `
 type Query {
   ping(message: String!): String
@@ -233,7 +233,7 @@ These are the available advanced options you can use:
 - `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
 
 
-```javascript
+```js
 // Apollo-specific options
 apollo: {
   // Advanced query with parameters
@@ -268,7 +268,7 @@ apollo: {
 
 Here is a reactive query example using polling:
 
-```javascript
+```js
 // Apollo-specific options
 apollo: {
   // 'tags' property of your polymer element
@@ -283,10 +283,34 @@ apollo: {
   },
 },
 ```
+### Refetch Query
 
+Use $`apollo.refetch(key);`
+
+```html
+<paper-icon-button on-tap="refetchTags" icon="refresh"></paper-icon-button>
+```
+
+```js
+// Apollo-specific options
+apollo: {
+  // 'tags' property of your polymer element
+  tags: {
+    query: gql`query tagList {
+      tags {
+        id,
+        label
+      }
+    }
+  },
+},
+refetchTags(){
+   this.$.apollo.refetch("tags");
+}
+```
 Here is how the server-side looks like:
 
-```javascript
+```js
 export const schema = `
 type Tag {
   id: Int
@@ -334,7 +358,7 @@ export const resolvers = {
 
 Mutations are queries that changes your data state on your apollo server. For more info, visit the [apollo doc](http://dev.apollodata.com/core/apollo-client-api.html#ApolloClient\.mutate).
 
-```javascript
+```js
   addTag() {
     // We save the user input in case of an error
     const newTag = this.newTag;
@@ -392,7 +416,7 @@ Mutations are queries that changes your data state on your apollo server. For mo
 
 Server-side:
 
-```javascript
+```js
 export const schema = `
 type Tag {
   id: Int
