@@ -281,7 +281,7 @@ apollo: {
         id,
         label
       }
-    }
+    }`,
   },
 },
 refetchTags(){
