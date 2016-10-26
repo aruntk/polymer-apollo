@@ -263,26 +263,6 @@ apollo: {
   },
 },
 ```
-
-### Reactive Query Example
-
-Here is a reactive query example using polling:
-
-```js
-// Apollo-specific options
-apollo: {
-  // 'tags' property of your polymer element
-  tags: {
-    query: gql`query tagList {
-      tags {
-        id,
-        label
-      }
-    }`,
-    pollInterval: 300, // ms
-  },
-},
-```
 ### Refetch Query
 
 Use $`apollo.refetch(key);`
@@ -308,6 +288,27 @@ refetchTags(){
    this.$.apollo.refetch("tags");
 }
 ```
+
+### Reactive Query Example
+
+Here is a reactive query example using polling:
+
+```js
+// Apollo-specific options
+apollo: {
+  // 'tags' property of your polymer element
+  tags: {
+    query: gql`query tagList {
+      tags {
+        id,
+        label
+      }
+    }`,
+    pollInterval: 300, // ms
+  },
+},
+```
+
 Here is how the server-side looks like:
 
 ```js
