@@ -6,7 +6,7 @@ function deepFind(obj, path) {
     i;
 
   for (i = 0; i < paths.length; ++i) {
-    if (current[paths[i]] == undefined) {
+    if (current[paths[i]] === undefined) {
       return undefined;
     } else {
       current = current[paths[i]];
@@ -119,7 +119,6 @@ class DollarApollo {
     }
     function catchError(error) {
       $apollo._changeLoader(loadingKey,false,loadingChangeCb);
-
       if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
         console.error(`GraphQL execution errors for query ${key}`);
         for (let e of error.graphQLErrors) {
@@ -130,13 +129,10 @@ class DollarApollo {
       } else {
         console.error(error);
       }
-
       if (typeof options.error === 'function') {
-        options.error(error);
+        options.error.apply(el,[error]);
       }
     }
-
-
   }
 
   _applyData(data,key) {
@@ -191,7 +187,7 @@ class DollarApollo {
       }
 
       if (typeof options.error === 'function') {
-        options.error(error);
+        options.error.apply(el,[error]);
       }
     }
   }
@@ -260,5 +256,4 @@ class DollarApollo {
 
   }
 }
-
 
