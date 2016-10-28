@@ -93,7 +93,7 @@ class DollarApollo {
   processObservers (el) {
     // Create subscription
     const $apollo = this;
-this.el = el;
+    this.el = el;
     for(let i in el.__apollo_store){
       const obj = el.__apollo_store[i];
       $apollo._subscribeObservers(i,obj.options,obj.observer);
@@ -101,7 +101,6 @@ this.el = el;
     }
   }
   _subscribeObservers(key,options,observer){
-    let firstLoadingDone = false;
     const el = this.el;
     let loadingKey = options.loadingKey;
     let loadingChangeCb = options.watchLoading;
@@ -144,6 +143,10 @@ this.el = el;
     if (data[key] === undefined) {
       console.error(`Missing "${key}" in properties`, data);
     } else {
+      const storeEntry = this.el.__apollo_store[key];
+      if(storeEntry && !storeEntry.firstLoadingDone){
+        this.el.__apollo_store[key].firstLoadingDone = true;
+      }
       this.el[key] = data[key];
     }
   }
@@ -165,7 +168,6 @@ this.el = el;
     if (typeof loadingChangeCb === 'function') {
       loadingChangeCb = loadingChangeCb.bind(el);
     }
-
     observer.refetch(variables, {
       forceFetch: !!options.forceFetch
     }).then(nextResult,catchError);
@@ -238,21 +240,25 @@ this.el = el;
       const rand = Math.floor(1000000000 + Math.random() * 9000000000);
       const r_id = `__apollo_${rand}`;
       el[r_id] = function(newValue){
-        options.variables[i] = newValue;
-        $apollo._refetch(key,options,options.variables,observer);
+        const storeEntry = el.__apollo_store[key];
+        if(storeEntry && storeEntry.firstLoadingDone){
+          options.variables[i] = newValue;
+          $apollo._refetch(key,options,options.variables,observer);
+
+        }
       };
       el.observers = el.observers || [];
       el.observers.push(`__apollo_${rand}(${_var})`);
       const prop = deepFind(el.properties,_var);
-      //if(prop !== undefined){
-      _var = prop; 
-      //}
-      //else{
-      //console.error(`Missing "${i}" in properties`);
-      //}
-      options.variables[i] = _var;
+      if(prop !== undefined){
+      options.variables[i] = prop.value;
+      }
+      else{
+      console.error(`Missing "${i}" in properties`);
+      }
     }
 
   }
 }
+
 
