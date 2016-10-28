@@ -122,12 +122,12 @@ this.el = el;
       $apollo._changeLoader(loadingKey,false,loadingChangeCb);
 
       if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
-        console.error(`GraphQL execution errors for query ${query}`);
+        console.error(`GraphQL execution errors for query ${key}`);
         for (let e of error.graphQLErrors) {
           console.error(e);
         }
       } else if (error.networkError) {
-        console.error(`Error sending the query ${query}`, error.networkError);
+        console.error(`Error sending the query ${key}`, error.networkError);
       } else {
         console.error(error);
       }
@@ -178,12 +178,12 @@ this.el = el;
       $apollo._changeLoader(loadingKey,false,loadingChangeCb);
 
       if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
-        console.error(`GraphQL execution errors for query ${query}`);
+        console.error(`GraphQL execution errors for query ${key}`);
         for (let e of error.graphQLErrors) {
           console.error(e);
         }
       } else if (error.networkError) {
-        console.error(`Error sending the query ${query}`, error.networkError);
+        console.error(`Error sending the query ${key}`, error.networkError);
       } else {
         console.error(error);
       }
