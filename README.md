@@ -1,8 +1,10 @@
 # Polymer-Apollo
 
-[polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
+[Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
-[polymer apollo frontpage app](https://github.com/aruntk/polymer-apollo-frontpage)
+[Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage)
+
+[Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo)
 
 ## Installation
 
