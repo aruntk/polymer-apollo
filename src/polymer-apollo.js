@@ -113,6 +113,7 @@ class DollarApollo {
   }
   _subscribeObservers(key,options,observer){
     const el = this.el;
+    const $apollo = this;
     let loadingKey = options.loadingKey;
     let loadingChangeCb = options.watchLoading;
     this._changeLoader(loadingKey,true,loadingChangeCb);
@@ -123,7 +124,7 @@ class DollarApollo {
       next: nextResult,
       error: catchError
     });
-    const $apollo = this;
+
     function nextResult({ data }) {
       $apollo._changeLoader(loadingKey,false,loadingChangeCb);
       $apollo._applyData(data,key);
@@ -171,6 +172,7 @@ class DollarApollo {
   }
   _refetch(key,options,variables,observer){
     const  el = this.el;
+    const $apollo = this;
     let loadingKey = options.loadingKey;
     let loadingChangeCb = options.watchLoading;
     this._changeLoader(loadingKey,true,loadingChangeCb);
@@ -180,7 +182,7 @@ class DollarApollo {
     observer.refetch(variables, {
       forceFetch: !!options.forceFetch
     }).then(nextResult,catchError);
-    const $apollo = this;
+
     function nextResult({ data }) {
       $apollo._changeLoader(loadingKey,false,loadingChangeCb);
       $apollo._applyData(data,key);
@@ -254,7 +256,7 @@ class DollarApollo {
 
     observer = this._processVariables(key,options,sub,observer);
 
-    if (options.skip) {
+    if (options.skip !== undefined) {
       let _var = options.skip;
 
       this._addPolymerObserver(el, _var, function(newSkipValue){
