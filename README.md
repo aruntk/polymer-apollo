@@ -29,7 +29,7 @@ const apolloClient = new ApolloClient({
   queryTransformer: addTypename,
 });
 
-//create a new polymer behavior from PolymerApollo class. 
+//create a new polymer behavior from PolymerApollo class.
 export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
 ```
 
@@ -131,7 +131,7 @@ You can then use your property as usual in your polymer component:
 
 You can add variables (read parameters) to your `gql` query by declaring `query` and `variables` in an object:
 
-Variable values are paths to Polymer element properties. 
+Variable values are paths to Polymer element properties.
 
 eg `variables:{limit:"route.limit"}` . In this graphql variable limit changes when the polymer property route.limit changes (similar to observer);
 
@@ -231,8 +231,9 @@ And then use it in your polymer component:
 
 These are the available advanced options you can use:
 - `error(error)` is a hook called when there are errors, `error` being an Apollo error object with either a `graphQLErrors` property or a `networkError` property.
-- `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`. 
+- `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`.
 - `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
+- `skip` can be a path to a Polymer element boolean property used to set the state of the query subscribtion. Check example below.
 
 
 ```js
@@ -355,6 +356,42 @@ export const resolvers = {
     },
   },
 };
+```
+### Skip query example
+
+```js
+properties: {
+  ...
+
+  isNotAuth: {
+    type: Boolean,
+    value: true
+  }
+},
+
+...
+
+// Apollo-specific options
+apollo: {
+  // 'tags' property of your polymer element
+  tags: {
+    query: gql`query tagList {
+      tags {
+        id,
+        label
+      }
+    }`,
+    skip: 'isNotAuth', // ms
+  },
+},
+
+listeners: {
+  'auth-changed': '_onAuthChanged'
+},
+
+_onAuthChanged: function(e) {
+  this.isNotAuth = !e.detail.userid;
+},
 ```
 
 ### Mutations

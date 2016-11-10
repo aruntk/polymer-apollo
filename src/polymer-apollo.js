@@ -81,9 +81,19 @@ class DollarApollo {
     const _subscribe = observable.subscribe.bind(observable);
     observable.subscribe = (function(options) {
       let sub = _subscribe(options);
+
+      const _unsubscribe = sub.unsubscribe.bind(sub);
+      sub.unsubscribe = function() {
+        _unsubscribe();
+        el._apolloSubscriptions = el._apolloSubscriptions.filter((storeSub) => {
+          return storeSub !== sub;
+        });
+      }.bind(sub);
+
       el._apolloSubscriptions.push(sub);
       return sub;
     }).bind(observable);
+
     return observable;
   }
 
@@ -96,8 +106,9 @@ class DollarApollo {
     this.el = el;
     for(let i in el.__apollo_store){
       const obj = el.__apollo_store[i];
-      $apollo._subscribeObservers(i,obj.options,obj.observer);
-
+      if (obj.options.skip === undefined) {
+        $apollo._subscribeObservers(i,obj.options,obj.observer);
+      }
     }
   }
   _subscribeObservers(key,options,observer){
@@ -133,6 +144,8 @@ class DollarApollo {
         options.error.apply(el,[error]);
       }
     }
+
+    return sub;
   }
 
   _applyData(data,key) {
@@ -217,9 +230,19 @@ class DollarApollo {
       'error',
       'loadingKey',
       'watchLoading',
+      'skip'
     ]);
     return apolloOptions;
   }
+
+  _addPolymerObserver(el, variable, observer) {
+    const rand = Math.floor(1000000000 + Math.random() * 9000000000);
+    const r_id = `__apollo_${rand}`;
+    el[r_id] = observer;
+    el.observers = el.observers || [];
+    el.observers.push(`__apollo_${rand}(${variable})`);
+  }
+
   process(key, options) {
     const el = this.el;
     const $apollo = this;
@@ -231,29 +254,53 @@ class DollarApollo {
 
     observer = this._processVariables(key,options,sub,observer);
 
+    if (options.skip) {
+      let _var = options.skip;
+
+      this._addPolymerObserver(el, _var, function(newSkipValue){
+        const storeEntry = el.__apollo_store[key];
+        if (!newSkipValue) {
+          storeEntry.options.skip = false;
+          sub = $apollo._subscribeObservers(key, storeEntry.options, storeEntry.observer);
+        } else {
+          storeEntry.options.skip = true;
+          if (sub) {
+            sub.unsubscribe();
+            sub = null;
+          }
+        }
+      });
+
+      const prop = deepFind(el.properties,_var);
+      if(prop !== undefined) {
+        // assuming initial value is true if undefined
+        options.skip = prop.value === undefined ? true : prop.value;
+      }
+      else {
+        console.error(`Missing "${_var}" in properties, ignoring skip option`);
+        delete options.skip;
+      }
+    }
+
     for(let i in options.variables){
       let _var = options.variables[i];
-      const rand = Math.floor(1000000000 + Math.random() * 9000000000);
-      const r_id = `__apollo_${rand}`;
-      el[r_id] = function(newValue){
+
+      this._addPolymerObserver(el, _var, function(newValue){
         const storeEntry = el.__apollo_store[key];
         if(storeEntry && storeEntry.firstLoadingDone){
           options.variables[i] = newValue;
           $apollo._refetch(key,options,options.variables,observer);
-
         }
-      };
-      el.observers = el.observers || [];
-      el.observers.push(`__apollo_${rand}(${_var})`);
+      });
+
       const prop = deepFind(el.properties,_var);
       if(prop !== undefined){
-      options.variables[i] = prop.value;
+        options.variables[i] = prop.value;
       }
       else{
-      console.error(`Missing "${i}" in properties`);
+        console.error(`Missing "${i}" in properties`);
       }
     }
 
   }
 }
-
