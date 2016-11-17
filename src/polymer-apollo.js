@@ -27,7 +27,11 @@ export class DollarApollo {
   }
 
   get query() {
-    return this.client.query;
+    return this.client.query.bind(this.client);
+  }
+
+  get subscribe() {
+    return this.client.subscribe.bind(this.client);
   }
 
   watchQuery(options) {
@@ -51,7 +55,7 @@ export class DollarApollo {
   }
 
   get mutate() {
-    return this.client.mutate;
+    return this.client.mutate.bind(this.client);
   }
 
   processObservers(el) {
