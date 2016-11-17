@@ -206,56 +206,57 @@ export class DollarApollo {
   }
 
   process(key, options) {
-    const el = this.el;
-    const $apollo = this;
-    let sub;
+    if (key && options) {
+      const el = this.el;
+      const $apollo = this;
+      let sub;
 
-    const observer = this._processVariables(key, options, sub);
+      const observer = this._processVariables(key, options, sub);
 
-    if (options.skip !== undefined) {
-      const _var = options.skip;
+      if (options.skip !== undefined) {
+        const _var = options.skip;
 
-      this._addPolymerObserver(el, _var, (newSkipValue) => {
-        const storeEntry = el.__apollo_store[key];
-        if (!newSkipValue) {
-          storeEntry.options.skip = false;
-          sub = $apollo._subscribeObservers(key, storeEntry.options, storeEntry.observer);
-        } else {
-          storeEntry.options.skip = true;
-          if (sub) {
-            sub.unsubscribe();
-            sub = null;
-          }
-        }
-      });
-
-      const prop = deepFind(el.properties, _var);
-      if (prop !== undefined) {
-        // assuming initial value is true if undefined
-        options.skip = prop.value === undefined ? true : prop.value;
-      } else {
-        console.error(`Missing "${_var}" in properties, ignoring skip option`);
-        delete options.skip;
-      }
-    }
-
-    for (const i of Object.keys(options.variables)) {
-      if ({}.hasOwnProperty.call(options.variables, i)) {
-        const _var = options.variables[i];
-
-        this._addPolymerObserver(el, _var, (newValue) => {
+        this._addPolymerObserver(el, _var, (newSkipValue) => {
           const storeEntry = el.__apollo_store[key];
-          if (storeEntry && storeEntry.firstLoadingDone) {
-            options.variables[i] = newValue;
-            $apollo._refetch(key, options, options.variables, observer);
+          if (!newSkipValue) {
+            storeEntry.options.skip = false;
+            sub = $apollo._subscribeObservers(key, storeEntry.options, storeEntry.observer);
+          } else {
+            storeEntry.options.skip = true;
+            if (sub) {
+              sub.unsubscribe();
+              sub = null;
+            }
           }
         });
 
         const prop = deepFind(el.properties, _var);
         if (prop !== undefined) {
-          options.variables[i] = prop.value;
+          // assuming initial value is true if undefined
+          options.skip = prop.value === undefined ? true : prop.value;
         } else {
-          console.error(`Missing "${i}" in properties`);
+          console.error(`Missing "${_var}" in properties, ignoring skip option`);
+          delete options.skip;
+        }
+      }
+      if (options.variables) {
+        for (const i of Object.keys(options.variables)) {
+          if ({}.hasOwnProperty.call(options.variables, i)) {
+            const _var = options.variables[i];
+            this._addPolymerObserver(el, _var, (newValue) => {
+              const storeEntry = el.__apollo_store[key];
+              if (storeEntry && storeEntry.firstLoadingDone) {
+                options.variables[i] = newValue;
+                $apollo._refetch(key, options, options.variables, observer);
+              }
+            });
+            const prop = deepFind(el.properties, _var);
+            if (prop !== undefined) {
+              options.variables[i] = prop.value;
+            } else {
+              console.error(`Missing "${i}" in properties`);
+            }
+          }
         }
       }
     }
@@ -300,3 +301,4 @@ export class PolymerApollo {
     }
   }
 }
+
