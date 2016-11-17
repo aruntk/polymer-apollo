@@ -6,8 +6,22 @@
 
 [Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo)
 
-## Installation
 
+## Table of contents
+
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage in components](#usage-in-components)
+- [Queries](#queries)
+  - [Simple query](#simple-query)
+  - [Query with parameters](#query-with-parameters)
+  - [Advanced options](#advanced-options)
+  - [Refetch Query Example](#refetch-query)
+  - [Skip Query Example](#skip-query-example)
+  - [Reactive Query Example](#reactive-query-example)
+- [Mutations](#mutations)
+
+## Installation
 
     npm install --save polymer-apollo apollo-client
 
