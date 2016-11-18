@@ -1,6 +1,6 @@
 {
   "name": "polymer-apollo",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Polymer Apollo Integration",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/aruntk/polymer-apollo#readme",
   "peerDependencies": {
-    "apollo-client": "^0.5.0"
+    "apollo-client": "^0.5.5"
   },
   "dependencies": {
     "lodash.map": "^4.6.0",
