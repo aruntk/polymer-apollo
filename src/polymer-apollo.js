@@ -188,7 +188,11 @@ export class DollarApollo {
 
   refetch(key) {
     const obj = this.el.__apollo_store[key];
-    this._refetch(key, obj.options, obj.variables, obj.observer);
+    if (obj) {
+      this._refetch(key, obj.options, obj.variables, obj.observer);
+    } else {
+      console.error(`Unable to find a query with key : ${key}`);
+    }
   }
 
   _generateApolloOptions(options) {
