@@ -18,6 +18,8 @@
   - [Advanced options](#advanced-options)
   - [Refetch Query Example](#refetch-query)
   - [Skip Query Example](#skip-query-example)
+  - [Skip Query Example](#skip-query-example)
+  - [dataKey option Example](#datakey-option-example)
   - [Reactive Query Example](#reactive-query-example)
 - [Mutations](#mutations)
 
@@ -248,6 +250,7 @@ These are the available advanced options you can use:
 - `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`.
 - `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
 - `skip` can be a path to a Polymer element boolean property used to set the state of the query subscribtion. Check example below.
+- `dataKey` can be use to set the name of the property to get from the graphql data object. If not defined, the key of the query is used. It's useful when you use a graphql multiple times in the same polymer element. Check example below.
 
 
 ```js
@@ -405,6 +408,48 @@ listeners: {
 
 _onAuthChanged: function(e) {
   this.isNotAuth = !e.detail.userid;
+},
+```
+
+### dataKey option example
+
+```js
+properties: {
+  ...
+
+  tags: {
+    type: Object,
+  },
+
+  besttags: {
+    type: Object,
+  }
+},
+
+...
+
+// Apollo-specific options
+apollo: {
+  // 'tags' property of your polymer element
+  tags: {
+    query: gql`query tagList {
+      tags(rate: 0) {
+        id,
+        label
+      }
+    }`
+  },
+  // 'besttags' property of your polymer element, but assigned to 'tags' key of
+  // query response
+  besttags: {
+    query: gql`query bestTagList {
+      tags(rate: 10) {
+        id,
+        label
+      }
+    }`,
+    dataKey: 'tags'
+  },
 },
 ```
 

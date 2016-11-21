@@ -82,7 +82,7 @@ export class DollarApollo {
 
     function nextResult({ data }) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
-      $apollo._applyData(data, key);
+      $apollo._applyData(data, options.dataKey, key);
     }
 
     function catchError(error) {
@@ -110,15 +110,15 @@ export class DollarApollo {
     return sub;
   }
 
-  _applyData(data, key) {
+  _applyData(data, key, prop) {
     if (data[key] === undefined) {
-      console.error(`Missing "${key}" in properties`, data);
+      console.error(`Missing "${key}" in GraphQL data`, data);
     } else {
       const storeEntry = this.el.__apollo_store[key];
       if (storeEntry && !storeEntry.firstLoadingDone) {
         this.el.__apollo_store[key].firstLoadingDone = true;
       }
-      this.el[key] = data[key];
+      this.el[prop] = data[key];
     }
   }
 
@@ -143,7 +143,7 @@ export class DollarApollo {
     }
     function nextResult({ data }) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
-      $apollo._applyData(data, key);
+      $apollo._applyData(data, options.dataKey, key);
     }
     function catchError(error) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
@@ -197,6 +197,7 @@ export class DollarApollo {
       'loadingKey',
       'watchLoading',
       'skip',
+      'dataKey',
     ]);
     return apolloOptions;
   }
@@ -214,6 +215,10 @@ export class DollarApollo {
       const el = this.el;
       const $apollo = this;
       let sub;
+
+      if (!options.dataKey) {
+        options.dataKey = key;
+      }
 
       const observer = this._processVariables(key, options, sub);
 
@@ -305,4 +310,3 @@ export class PolymerApollo {
     }
   }
 }
-
