@@ -1,20 +1,6 @@
 /* eslint-disable no-param-reassign, func-names, no-console */
 import omit from 'lodash.omit';
 
-function deepFind(obj, path) {
-  const paths = path.split('.');
-  let current = obj;
-  let i;
-
-  for (i = 0; i < paths.length; i += 1) {
-    if (current[paths[i]] === undefined) {
-      return undefined;
-    }
-    current = current[paths[i]];
-  }
-  return current;
-}
-
 export class DollarApollo {
   constructor(el) {
     this.el = el;
@@ -243,7 +229,7 @@ export class DollarApollo {
           }
         });
 
-        const prop = deepFind(el.properties, _var);
+        const prop = Polymer.Base.get(_var, el.properties);
         if (prop !== undefined) {
           // assuming initial value is true if undefined
           options.skip = prop.value === undefined ? true : prop.value;
@@ -263,7 +249,7 @@ export class DollarApollo {
                 $apollo._refetch(key, options, options.variables, observer);
               }
             });
-            const prop = deepFind(el.properties, _var);
+            const prop = Polymer.Base.get(_var, el.properties);
             if (prop !== undefined) {
               options.variables[i] = prop.value;
             } else {
