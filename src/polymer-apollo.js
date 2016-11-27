@@ -196,8 +196,7 @@ export class DollarApollo {
     const rand = Math.floor(1000000000 + (Math.random() * 9000000000));
     const rId = `__apollo_${rand}`;
     el[rId] = observer;
-    el.observers = el.observers || [];
-    el.observers.push(`__apollo_${rand}(${variable})`);
+    el._addComplexObserverEffect(`__apollo_${rand}(${variable})`);
   }
 
   process(key, options) {
