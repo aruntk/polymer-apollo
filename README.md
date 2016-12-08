@@ -573,5 +573,3 @@ export const resolvers = {
 ---
 
 Created by Arun Kumar T K (@aruntk)
-
-Inspired by Guillaume Chau's [vue-apollo](https://github.com/Akryum/vue-apollo) project
