@@ -21,6 +21,8 @@
   - [dataKey option Example](#datakey-option-example)
   - [Reactive Query Example](#reactive-query-example)
 - [Mutations](#mutations)
+- [Subscriptions](#subscriptions)
+- [Pagination with `fetchMore`](#pagination-with-fetchmore)
 
 ## Installation
 
