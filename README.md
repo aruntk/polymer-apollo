@@ -18,7 +18,6 @@
   - [Advanced options](#advanced-options)
   - [Refetch Query Example](#refetch-query)
   - [Skip Query Example](#skip-query-example)
-  - [Skip Query Example](#skip-query-example)
   - [dataKey option Example](#datakey-option-example)
   - [Reactive Query Example](#reactive-query-example)
 - [Mutations](#mutations)
