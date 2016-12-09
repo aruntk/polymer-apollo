@@ -578,7 +578,7 @@ To make enable the websocket-based subscription, a bit of additional setup is re
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 // New Imports
 import { Client } from 'subscriptions-transport-ws';
-import { addGraphQLSubscriptions, PolymerApollo } from 'vue-apollo';
+import { addGraphQLSubscriptions, PolymerApollo } from 'polymer-apollo';
 
 // Create the network interface
 const networkInterface = createNetworkInterface({
