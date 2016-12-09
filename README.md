@@ -568,6 +568,199 @@ export const resolvers = {
   },
 };
 ```
+## Subscriptions
+
+To make enable the websocket-based subscription, a bit of additional setup is required:
+
+```javascript
+import ApolloClient, { createNetworkInterface } from 'apollo-client';
+// New Imports
+import { Client } from 'subscriptions-transport-ws';
+import { addGraphQLSubscriptions, PolymerApollo } from 'vue-apollo';
+
+// Create the network interface
+const networkInterface = createNetworkInterface({
+  uri: 'http://localhost:3000/graphql',
+  transportBatching: true,
+});
+
+// Create the subscription websocket client
+const wsClient = new Client('ws://localhost:3030');
+
+// Extend the network interface with the subscription client
+const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
+  networkInterface,
+  wsClient,
+);
+
+// Create the apollo client with the new network interface
+const apolloClient = new ApolloClient({
+  networkInterface: networkInterfaceWithSubscriptions,
+});
+
+//create a new polymer behavior from PolymerApollo class.
+export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
+
+// Your app is now subscription-ready!
+
+
+```
+
+Use the `$apollo.subscribe()` method to subscribe to a GraphQL subscription that will get killed automatically when the component is destroyed:
+
+```javascript
+attached() {
+  const subQuery = gql`subscription tags($type: String!) {
+    tagAdded(type: $type) {
+      id
+      label
+      type
+    }
+  }`;
+
+  const observer = this.$apollo.subscribe({
+    query: subQuery,
+    variables: {
+      type: 'City',
+    },
+  });
+
+  observer.subscribe({
+    next(data) {
+      console.log(data);
+    },
+    error(error) {
+      console.error(error);
+    },
+  });
+},
+```
+
+You can declare subscriptions in the `apollo` option with the `subscribe` keyword:
+
+```javascript
+apollo: {
+  // Subscriptions
+  subscribe: {
+    // When a tag is added
+    tags: {
+      query: gql`subscription tags($type: String!) {
+        tagAdded(type: $type) {
+          id
+          label
+          type
+        }
+      }`,
+      // Reactive variables
+      variables: {
+        // This works just like regular queries
+        // and will re-subscribe with the right variables
+        // each time the values change
+        type: 'City',
+      },
+      // Result hook
+      result(data) {
+        console.log(data);
+        // Let's update the local data
+        this.tags.push(data.tagAdded);
+      },
+    },
+  },
+},
+```
+
+You can then access the subscription `ObservableQuery` object with `this.$apollo.subscriptions.<name>`.
+
+## Pagination with `fetchMore`
+
+Use the `fetchMore()` method on the query:
+
+```javascript
+<template>
+  <div>
+    <h2>Pagination</h2>
+    <div class="tag-list" hidden="{{!tagsPage}}">
+      <template is="dom-repeat" items="[[tagsPage.tags]]" as="tag">
+        <div class="tag-list-item">
+          {{ tag.id }} - {{ tag.label }} - {{ tag.type }}
+        </div>
+      </template>
+      <div class="actions">
+        <paper-button hidden="{{!showMoreEnabled}}" on-tap="showMore">Show more</paper-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import gql from 'graphql-tag';
+
+Polymer({
+  is: 'example-element',
+  properties: {
+    page: {
+      type: Number,
+      value: 0,
+    },
+    pageSize: {
+      type: Number,
+      value: 10,
+    },
+    showMoreEnabled: {
+      type: Number,
+      value: true,
+    },
+  },
+  apollo: {
+    // Pages
+    tagsPage: {
+      // GraphQL Query
+      query: gql`query tagsPage ($page: Int!, $pageSize: Int!) {
+        tagsPage(page: $page, size: $pageSize) {
+          tags {
+            id
+            label
+            type
+          }
+          hasMore
+        }
+      }`,
+      // Initial variables
+      variables: {
+        page: 'page',
+        pageSize: 'pageSize',
+      },
+    },
+  },
+  showMore() {
+    this.page ++;
+    // Fetch more data and transform the original result
+    this.$apollo.queries.tagsPage.fetchMore({
+      // New variables
+      variables: {
+        page: this.page,
+        pageSize: 20,
+      },
+      // Transform the previous result with new data
+      updateQuery: (previousResult, { fetchMoreResult }) => {
+        const newTags = fetchMoreResult.data.tagsPage.tags;
+        const hasMore = fetchMoreResult.data.tagsPage.hasMore;
+
+        this.showMoreEnabled = hasMore;
+
+        return {
+          tagsPage: {
+            // Merging the tag list
+            tags: [...previousResult.tagsPage.tags, ...newTags],
+            hasMore,
+          },
+        };
+      },
+    });
+  },
+};
+</script>
+```
 
 ---
 
