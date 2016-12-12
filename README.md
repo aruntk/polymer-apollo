@@ -20,6 +20,7 @@
   - [Skip Query Example](#skip-query-example)
   - [dataKey option Example](#datakey-option-example)
   - [Reactive Query Example](#reactive-query-example)
+- [Fragments](#fragments)
 - [Mutations](#mutations)
 - [Subscriptions](#subscriptions)
 - [Pagination with `fetchMore`](#pagination-with-fetchmore)
@@ -537,6 +538,47 @@ apollo: {
         label
       }
     }`,
+    dataKey: 'tags'
+  },
+},
+```
+
+### fragments
+
+
+```js
+import gql from 'graphql-tag';
+
+const fragment = gql`fragment CommonFields on tags {
+  id,
+  label
+}`;
+```
+
+Embed the fragment in your query document directly with:
+
+```js
+import gql from 'graphql-tag';
+// Apollo-specific options
+apollo: {
+  // 'tags' property of your polymer element
+  tags: {
+    query: gql`query tagList {
+      tags(rate: 0) {
+        ...CommonFields
+      }
+    }
+    ${fragment}`
+  },
+  // 'besttags' property of your polymer element, but assigned to 'tags' key of
+  // query response
+  besttags: {
+    query: gql`query bestTagList {
+      tags(rate: 10) {
+        ...CommonFields
+      }
+    }
+    ${fragment}`
     dataKey: 'tags'
   },
 },
