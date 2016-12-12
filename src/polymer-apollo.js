@@ -90,7 +90,7 @@ export class DollarApollo {
   _applyData(data) {
     if (data) {
       for (const key of Object.keys(data)) {
-        this.el[key] = data[key];
+        this.el.set([key], data[key]);
       }
     }
   }
