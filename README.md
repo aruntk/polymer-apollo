@@ -804,6 +804,7 @@ Similar to fetchMore the following methods can be used. for queries $apollo.quer
 * startPolling()
 * stopPolling()
 * subscribeToMore()
+* currentResult()
 * variables : an object containing variables used to get this result.
 * loading : boolean, useful if you set notifyOnNetworkStatusChange to true in query options.
 * networkStatus : the status of the request ,useful if you set notifyOnNetworkStatusChange to true in query options
