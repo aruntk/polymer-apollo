@@ -59,8 +59,9 @@ export class DollarApollo {
     function nextResult(result) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
       $apollo._applyData(result.data, key, entry.dataKey);
+      console.log(entry);
       if (typeof entry.success === 'function') {
-        entry.success.apply(el, result);
+        entry.success.call(el, result);
       }
     }
 
@@ -77,7 +78,7 @@ export class DollarApollo {
         console.error(error);
       }
       if (typeof entry.error === 'function') {
-        entry.error.apply(el, [error]);
+        entry.error.call(el, error);
       }
     }
     return { next: nextResult, error: catchError };
