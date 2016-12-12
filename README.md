@@ -878,6 +878,7 @@ Similar to fetchMore the following methods can be used. for queries $apollo.quer
 
 Contributors
 
-Anthony Hinsinger (@atoy40)
-Arun Kumar T K (@aruntk)
+Anthony Hinsinger ([@atoy40](https://github.com/atoy40))
+
+Arun Kumar T K ([@aruntk](https://github.com/aruntk))
 
