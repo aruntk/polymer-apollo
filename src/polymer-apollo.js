@@ -58,7 +58,6 @@ export class DollarApollo {
     function nextResult(result) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
       $apollo._applyData(result.data, key, entry.dataKey);
-      console.log(entry);
       if (typeof entry.success === 'function') {
         entry.success.call(el, result);
       }
@@ -194,16 +193,18 @@ export class DollarApollo {
   }
   _processOptions(key, type) {
     const entry = this[`_${type}`][key];
-    if (!entry.dataKey) {
-      entry.dataKey = key;
-    }
     const rId = `__apollo_${entry._key}`;
-    if (typeof entry.options === 'string') {
-      this._createPolymerObserver(rId, key, type);
-    } else {
-      entry._options = entry.options || { skip: false };
+    if (!this.el[`${rId}_callback`]) {
+      if (!entry.dataKey) {
+        entry.dataKey = key;
+      }
+      if (typeof entry.options === 'string') {
+        this._createPolymerObserver(rId, key, type);
+      } else {
+        entry._options = entry.options || { skip: false };
+      }
+      this[`_${type}`][key] = entry;
     }
-    this[`_${type}`][key] = entry;
   }
   _createPolymerObserver(rId, key, type) {
     const $apollo = this;
@@ -227,7 +228,6 @@ export class DollarApollo {
           delete entry.sub;
         }
       } else if (_sub) {
-        console.log(_sub);
         _observable.setOptions(options);
       } else {
         const processArg = Object.assign({}, entry, options);
@@ -280,17 +280,18 @@ export class PolymerApollo {
     this.$apollo = new DollarApollo(this);
     this.$apollo.createApolloOptions(apollo);
   }
+  created() {
+    this.$apollo.init(this);
+  }
   ready() {
     if (this.apollo.onReady) {
       this.$apollo.attached = true;
-      this.$apollo.init(this);
       this.$apollo.start(this);
     }
   }
   attached() {
     if (!this.apollo.onReady) {
       this.$apollo.attached = true;
-      this.$apollo.init(this);
       this.$apollo.start(this);
     }
   }
@@ -324,4 +325,3 @@ export const addGraphQLSubscriptions = (networkInterface, wsClient) => {
   });
   return ret;
 };
-
