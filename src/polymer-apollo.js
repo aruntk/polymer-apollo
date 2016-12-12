@@ -88,7 +88,7 @@ export class DollarApollo {
     return sub;
   }
 
-  _applyData(data, key, prop) {
+  _applyData(data, prop, key) {
     if (data[key] === undefined) {
       console.error(`Missing "${key}" in GraphQL data`, data);
     } else {
