@@ -174,11 +174,11 @@ apollo: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    options: 'computedFn(prop1, prop2)',
+    options: 'computedFn(prop1)',
   },
-  computedFn: function(prop1, prop2) {
-    return { variables: { var1: prop1, var2: prop2 + 10 } };
-  },
+},
+computedFn: function(prop1, prop2) {
+  return { variables: { message: `${prop1} ping...`} };
 },
 ```
 
@@ -209,7 +209,7 @@ computedFn: function(prop1, prop2) {
   // Additional options if added here becomes reactive
   return {
   variables: {
-    var1: prop1,
+    message: prop1,
   },
     skip: prop2,
   };
@@ -264,15 +264,73 @@ And then use it in your polymer component:
 </template>
 </dom-module>
 ```
-#### Advanced options
+#### options
+
+Options can be added in two ways - computed and static.
+
+computed eg.
+
+```js
+apollo: {
+  // Query with parameters
+  ping: {
+    query: gql`query PingMessage($message: String!) {
+      ping(message: $message)
+    }`,
+    options: 'computedFn(prop1,prop2)',
+    // Additional options here. static.
+    forceFetch: true,
+  },
+},
+computedFn: function(prop1, prop2) {
+  // Additional options if added here becomes reactive
+  return {
+  variables: {
+    message: prop1,
+  },
+    skip: prop2,
+  };
+},
+```
+
+static eg.
+
+```js
+apollo: {
+  // Query with parameters
+  ping: {
+    query: gql`query PingMessage($message: String!) {
+      ping(message: $message)
+    }`,
+    options: {
+      variables: {
+        message: 'hai',
+      },
+      skip: true,
+    },
+    },
+    // Additional options here. static. you can add skip here also
+    forceFetch: true,
+  },
+},
+```
+
+#### Advanced Options
+
+##### Options
+
+You can add these to options/directly to the ping property in the above example if you dont want them to be polymer reactive.
+
+- `skip` Used to set the state of the query subscribtion. Check example below.
+- `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`.
+- `dataKey` can be use to set the name of the property to get from the graphql data object. If not defined, the key of the query is used. It's useful when you use a graphql multiple times in the same polymer element. Check example below.
+
+##### Hooks
 
 These are the available advanced options you can use:
 - `error(error)` is a hook called when there are errors, `error` being an Apollo error object with either a `graphQLErrors` property or a `networkError` property.
 - `success(result)` is a hook called when query/subscription returns successfully. Note. result = { data, loading, networkStatus}
-- `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`.
 - `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
-- `skip` can be a path to a Polymer element boolean property used to set the state of the query subscribtion. Check example below.
-- `dataKey` can be use to set the name of the property to get from the graphql data object. If not defined, the key of the query is used. It's useful when you use a graphql multiple times in the same polymer element. Check example below.
 
 
 ```js
@@ -285,23 +343,30 @@ apollo: {
     }`,
     // Reactive parameters
     options: 'computedFn(prop1, prop2)',
+
+    // Loading state
+    // loadingKey is the name of the data property
+    // that will be unset when the query is loading
+    // and set when it no longer is.
+    loadingKey: 'loadingQueriesCount',
     // Error handling
     error(error) {
       console.error('We\'ve got an error!', error);
     },
-    // Loading state
-    // loadingKey is the name of the data property
-    // that will be incremented when the query is loading
-    // and decremented when it no longer is.
-    loadingKey: 'loadingQueriesCount',
+    success(result) {
+      console.error('Success.!', result); // result is of the format { data, loading, networkStatus };
+    },
     // watchLoading will be called whenever the loading state changes
     watchLoading(isLoading) {
       // isLoading is a boolean
-      // countModifier is either 1 or -1
     },
   },
 },
+computedFn: function(prop1, prop2) {
+  return { variables: { message: `${prop1} ping...`}, skip: prop2 };
+},
 ```
+
 ### Refetch Query
 
 Use $`apollo.refetch(key);`
