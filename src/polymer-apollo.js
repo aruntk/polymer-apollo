@@ -6,7 +6,9 @@ export class DollarApollo {
     this.el = el;
     this.subscriptions = {};
     this.queries = {};
-    el.__apollo_store = {};
+    this._query = {};
+    this._subscription = {};
+    this._apolloSubscriptions = [];
   }
 
   get client() {
@@ -16,79 +18,50 @@ export class DollarApollo {
   get query() {
     return this.client.query.bind(this.client);
   }
-
-  watchQuery(options) {
-    const el = this.el;
-    const observable = this.client.watchQuery(options);
-    const _subscribe = observable.subscribe.bind(observable);
-    observable.subscribe = (function (opt) {
-      const sub = _subscribe(opt);
-
-      const _unsubscribe = sub.unsubscribe.bind(sub);
-      sub.unsubscribe = function () {
-        _unsubscribe();
-        el._apolloSubscriptions = el._apolloSubscriptions.filter(storeSub => storeSub !== sub);
-      };
-
-      el._apolloSubscriptions.push(sub);
-      return sub;
-    });
-
-    return observable;
-  }
-
-  subscribe(options) {
-    const el = this.el;
-    const observable = this.client.subscribe(options);
-    const _subscribe = observable.subscribe.bind(observable);
-    observable.subscribe = (function (opt) {
-      const sub = _subscribe(opt);
-
-      const _unsubscribe = sub.unsubscribe.bind(sub);
-      sub.unsubscribe = function () {
-        _unsubscribe();
-        el._apolloSubscriptions = el._apolloSubscriptions.filter(storeSub => storeSub !== sub);
-      };
-
-      el._apolloSubscriptions.push(sub);
-      return sub;
-    });
-
-    return observable;
-  }
-
   get mutate() {
     return this.client.mutate.bind(this.client);
   }
 
-  processObservers(el) {
-    // Create subscription
-    const $apollo = this;
-    this.el = el;
-    for (const i of Object.keys(el.__apollo_store)) {
-      const storeEntry = el.__apollo_store[i];
-      if (storeEntry.options.skip === undefined) {
-        $apollo._subscribeObservers(i, storeEntry);
-      }
-    }
+  watchQuery(options) {
+    const observable = this.client.watchQuery(options);
+    return this._processObservable(observable);
   }
 
-  _subscribeObservers(key, storeEntry) {
+  subscribe(options) {
+    const observable = this.client.subscribe(options);
+    return this._processObservable(observable);
+  }
+  _processObservable(observable) {
+    const self = this;
+    const _subscribe = observable.subscribe.bind(observable);
+    observable.subscribe = (function (opt) {
+      const sub = _subscribe(opt);
+
+      const _unsubscribe = sub.unsubscribe.bind(sub);
+      sub.unsubscribe = function () {
+        _unsubscribe();
+        self._apolloSubscriptions = self._apolloSubscriptions.filter(storeSub => storeSub !== sub);
+      };
+
+      self._apolloSubscriptions.push(sub);
+      return sub;
+    });
+    return observable;
+  }
+  _getSubscribeCallbacks(key, type) {
     const el = this.el;
     const $apollo = this;
-    const options = storeEntry.options;
-    const observer = storeEntry.observer;
-    const type = storeEntry.type;
-    const loadingKey = options.loadingKey;
-    let loadingChangeCb = options.watchLoading;
+    const entry = this[`_${type}`][key];
+    const loadingKey = entry.loadingKey;
+    const loadingChangeCb = entry.watchLoading;
     this._changeLoader(loadingKey, true, loadingChangeCb);
-    if (typeof loadingChangeCb === 'function') {
-      loadingChangeCb = loadingChangeCb.bind(el);
-    }
 
-    function nextResult({ data }) {
+    function nextResult(result) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
-      $apollo._applyData(data, options.dataKey, key);
+      $apollo._applyData(result.data, key, entry.dataKey);
+      if (typeof entry.success === 'function') {
+        entry.success.apply(el, result);
+      }
     }
 
     function catchError(error) {
@@ -103,16 +76,15 @@ export class DollarApollo {
       } else {
         console.error(error);
       }
-      if (typeof options.error === 'function') {
-        options.error.apply(el, [error]);
+      if (typeof entry.error === 'function') {
+        entry.error.apply(el, [error]);
       }
     }
-
-    const sub = observer.subscribe({
-      next: nextResult,
-      error: catchError,
-    });
-
+    return { next: nextResult, error: catchError };
+  }
+  _subscribeObservable(key, observable, type) {
+    const opt = this._getSubscribeCallbacks(key, type);
+    const sub = observable.subscribe(opt);
     return sub;
   }
 
@@ -120,10 +92,6 @@ export class DollarApollo {
     if (data[key] === undefined) {
       console.error(`Missing "${key}" in GraphQL data`, data);
     } else {
-      const storeEntry = this.el.__apollo_store[key];
-      if (storeEntry && !storeEntry.firstLoadingDone) {
-        this.el.__apollo_store[key].firstLoadingDone = true;
-      }
       this.el[prop] = data[key];
     }
   }
@@ -138,51 +106,20 @@ export class DollarApollo {
     }
   }
 
-  _refetch(key, storeEntry) {
-    const el = this.el;
-    const $apollo = this;
-    const options = storeEntry.options;
-    const observer = storeEntry.observer;
-    const variables = storeEntry.variables;
-    const type = storeEntry.type;
-    const loadingKey = options.loadingKey;
-    let loadingChangeCb = options.watchLoading;
-    this._changeLoader(loadingKey, true, loadingChangeCb);
-    if (typeof loadingChangeCb === 'function') {
-      loadingChangeCb = loadingChangeCb.bind(el);
-    }
-    function nextResult({ data }) {
-      $apollo._changeLoader(loadingKey, false, loadingChangeCb);
-      $apollo._applyData(data, options.dataKey, key);
-    }
-    function catchError(error) {
-      $apollo._changeLoader(loadingKey, false, loadingChangeCb);
-
-      if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
-        console.error(`GraphQL execution errors for ${type} ${key}`);
-        for (const e of error.graphQLErrors) {
-          console.error(e);
-        }
-      } else if (error.networkError) {
-        console.error(`Error sending the ${type} ${key}`, error.networkError);
-      } else {
-        console.error(error);
-      }
-
-      if (typeof options.error === 'function') {
-        options.error.apply(el, [error]);
-      }
-    }
-
-    observer.refetch(variables, {
+  _refetch(key, entry) {
+    const options = entry._options;
+    const observable = entry.observable;
+    const variables = options.variables;
+    const opt = this._getSubscribeCallbacks(key, 'query');
+    observable.refetch(variables, {
       forceFetch: !!options.forceFetch,
-    }).then(nextResult, catchError);
+    }).then(opt.next, opt.error);
   }
 
   refetch(key) {
-    const storeEntry = this.el.__apollo_store[key];
-    if (storeEntry) {
-      this._refetch(key, storeEntry);
+    const entry = this._query[key];
+    if (entry) {
+      this._refetch(key, entry);
     } else {
       console.error(`Unable to find a query with key : ${key}`);
     }
@@ -194,161 +131,160 @@ export class DollarApollo {
       'loadingKey',
       'watchLoading',
       'skip',
+      '_options',
+      'options',
+      'result',
       'dataKey',
     ]);
     return apolloOptions;
   }
-
-  _addPolymerObservers(key, options) {
-    const el = this.el;
+  createApolloOptions(apollo) {
+    if (apollo) {
+      const queries = omit(apollo, [
+        'subscribe',
+        'onReady',
+      ]);
+      this._query = queries || {};
+      this._subscription = apollo.subscribe || {};
+      for (const key of Object.keys(this._query)) {
+        this._createOptionsProp(key, 'query');
+      }
+      for (const key of Object.keys(this._subscription)) {
+        this._createOptionsProp(key, 'subscription');
+      }
+    }
+  }
+  _createOptionsProp(key, type) {
+    const options = this[`_${type}`][key].options;
+    const rnd = Math.floor(1000000000 + (Math.random() * 9000000000));
+    const rId = `__apollo_${rnd}`;
+    this[`_${type}`][key]._key = rnd;
+    if (typeof options === 'string') {
+      // options = computed property with random id
+      const optProp = {};
+      optProp[rId] = {
+        type: Object,
+        computed: options,
+      };
+      this.el.properties = Object.assign({}, this.el.properties, optProp);
+    }
+  }
+  init(el) {
+    this.el = el;
+    for (const key of Object.keys(this._query)) {
+      this._processOptions(key, 'query');
+    }
+    for (const key of Object.keys(this._subscription)) {
+      this._processOptions(key, 'subscription');
+    }
+  }
+  start(el) {
+    for (const key of Object.keys(this._query)) {
+      const entry = this._query[key];
+      const options = entry._options || el[`__apollo_${entry._key}`];
+      this._polymerChange('query', key, options);
+    }
+    for (const key of Object.keys(this._subscription)) {
+      const entry = this._subscription[key];
+      const options = entry._options || el[`__apollo_${entry._key}`];
+      this._polymerChange('subscription', key, options);
+    }
+  }
+  _processOptions(key, type) {
+    const entry = this[`_${type}`][key];
+    if (!entry.dataKey) {
+      entry.dataKey = key;
+    }
+    const rId = `__apollo_${entry._key}`;
+    if (typeof entry.options === 'string') {
+      this._createPolymerObserver(rId, key, type);
+    } else {
+      entry._options = entry.options || { skip: false };
+    }
+    this[`_${type}`][key] = entry;
+  }
+  _createPolymerObserver(rId, key, type) {
     const $apollo = this;
-    if (options.skip !== undefined) {
-      const _var = options.skip;
-
-      this._addPolymerObserver(el, _var, (newSkipValue) => {
-        const storeEntry = el.__apollo_store[key];
-        if (!newSkipValue) {
-          storeEntry.options.skip = false;
-          if ($apollo.attached) {
-            $apollo._subscribeObservers(key, storeEntry);
-          }
-        } else {
-          storeEntry.options.skip = true;
-        }
-      });
-
-      const prop = Polymer.Base.get(_var, el.properties);
-      if (prop !== undefined) {
-        // assuming initial value is true if undefined
-        options.skip = prop.value === undefined ? true : prop.value;
-      } else {
-        console.error(`Missing "${_var}" in properties, ignoring skip option`);
-        delete options.skip;
-      }
-    }
-    if (options.variables) {
-      for (const i of Object.keys(options.variables)) {
-        if ({}.hasOwnProperty.call(options.variables, i)) {
-          const _var = options.variables[i];
-          this._addPolymerObserver(el, _var, (newValue) => {
-            const storeEntry = el.__apollo_store[key];
-            if (storeEntry && storeEntry.firstLoadingDone) {
-              storeEntry.options.variables[i] = newValue;
-              $apollo._refetch(key, storeEntry);
-            }
-          });
-          const prop = Polymer.Base.get(_var, el.properties);
-          if (prop !== undefined) {
-            options.variables[i] = prop.value;
-          } else {
-            console.error(`Missing "${i}" in properties`);
-          }
-        }
-      }
-    }
-  }
-
-  _addPolymerObserver(el, variable, observer) {
-    const rand = Math.floor(1000000000 + (Math.random() * 9000000000));
-    const rId = `__apollo_${rand}`;
-    el[rId] = observer;
-    el._addComplexObserverEffect(`__apollo_${rand}(${variable})`);
-  }
-
-  _processQuery(key, options) {
-    const variables = options.variables;
-    // Create observer
-    const newObserver = this.watchQuery(this._generateApolloOptions(options));
-    this.el.__apollo_store[key] = {
-      observer: newObserver,
-      variables,
-      options,
-      type: 'query',
+    // unique id for observer callback
+    const cbId = `${rId}_callback`;
+    this.el[cbId] = (n) => {
+      $apollo._polymerChange(type, key, n);
     };
-    return newObserver;
+    this.el._addComplexObserverEffect(`${cbId}(${rId})`);
   }
-
-  processQuery(key, options) {
-    if (key && options) {
-      const $apollo = this;
-      let sub;
-
-      if (!options.dataKey) {
-        options.dataKey = key;
+  _polymerChange(type, key, options) {
+    const entry = this[`_${type}`][key];
+    entry._options = options;
+    const _observable = entry.observable;
+    const skip = !!options.skip;
+    const _sub = entry.sub;
+    if (skip) {
+      if (_sub) {
+        _sub.unsubscribe();
+        delete entry.sub;
       }
+    } else if (_sub) {
+      _observable.setOptions(options);
+    } else {
+      const processArg = Object.assign({}, entry, options);
 
-      const observer = this._processQuery(key, options, sub);
-      this._addPolymerObservers(key, options);
-      $apollo.queries[key] = observer;
+      const { sub, observable } = this[`${type}Process`](key, processArg);
+      entry.sub = sub;
+      entry.observable = observable;
     }
+    this[`_${type}`][key] = entry;
   }
-  _processSubscription(key, options) {
-    const variables = options.variables;
-    // Create observer
-    const newObserver = this.subscribe(this._generateApolloOptions(options));
-    this.el.__apollo_store[key] = {
-      observer: newObserver,
-      variables,
-      options,
-      type: 'subscription',
-    };
-    return newObserver;
-  }
-  processSubscription(key, options) {
+  queryProcess(key, options) {
     if (key && options) {
-      const $apollo = this;
-
-      if (!options.dataKey) {
-        options.dataKey = key;
-      }
-
-      const observer = this._processSubscription(key, options);
-      $apollo.subscriptions[key] = observer;
-      this._addPolymerObservers(key, options);
+      // Create observer
+      const observable = this.watchQuery(this._generateApolloOptions(options));
+      this.queries[key] = observable;
+      options.observable = observable;
+      // subscribe observable
+      const sub = this._subscribeObservable(key, observable, 'query');
+      return { sub, observable };
     }
+    return null;
+  }
+  subscriptionProcess(key, options) {
+    if (key && options) {
+      // Create observable
+      const observable = this.subscribe(this._generateApolloOptions(options));
+      this.subscriptions[key] = observable;
+      options.observable = observable;
+      this._subscription[key] = options;
+      // subscribe observable
+      const sub = this._subscribeObservable(key, observable, 'subscription');
+      return { sub, observable };
+    }
+    return null;
   }
 }
-
 export class PolymerApollo {
   constructor(options) {
     this._apolloClient = options.apolloClient;
-    this._apolloSubscriptions = [];
-    this.properties = {};
   }
   beforeRegister() {
     const apollo = this.apollo;
     this.$apollo = new DollarApollo(this);
-
-    if (apollo) {
-      const queries = omit(apollo, [
-        'subscribe',
-      ]);
-
-      // watchQuery
-      for (const key of Object.keys(queries)) {
-        this.$apollo.processQuery(key, queries[key]);
-      }
-      // subscribe
-      if (apollo.subscribe) {
-        for (const key of Object.keys(apollo.subscribe)) {
-          this.$apollo.processSubscription(key, apollo.subscribe[key]);
-        }
-      }
-    }
+    this.$apollo.createApolloOptions(apollo);
   }
   attached() {
-    this.$apollo.processObservers(this);
-    this.$apollo.attached = true;
+    if (!this.apollo.onReady) {
+      this.$apollo.init(this);
+      this.$apollo.start(this);
+    }
   }
   detached() {
-    this._apolloSubscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
-    this._apolloSubscriptions = null;
-    if (this.$apollo) {
-      this.$apollo = null;
+    if (!this.apollo.onReady) {
+      this.$apollo._apolloSubscriptions.forEach((sub) => {
+        sub.unsubscribe();
+      });
+      this.$apollo._apolloSubscriptions = null;
+      if (this.$apollo) {
+        this.$apollo = null;
+      }
     }
-    this.$apollo.attached = false;
   }
 }
 
