@@ -57,7 +57,7 @@ export class DollarApollo {
 
     function nextResult(result) {
       $apollo._changeLoader(loadingKey, false, loadingChangeCb);
-      $apollo._applyData(result.data, key, entry.dataKey);
+      $apollo._applyData(result.data);
       if (typeof entry.success === 'function') {
         entry.success.call(el, result);
       }
@@ -87,11 +87,11 @@ export class DollarApollo {
     return sub;
   }
 
-  _applyData(data, prop, key) {
-    if (data[key] === undefined) {
-      console.error(`Missing "${key}" in GraphQL data`, data);
-    } else {
-      this.el[prop] = data[key];
+  _applyData(data) {
+    if (data) {
+      for (const key of Object.keys(data)) {
+        this.el[key] = data[key];
+      }
     }
   }
 
@@ -135,7 +135,6 @@ export class DollarApollo {
       '_options',
       'options',
       'result',
-      'dataKey',
     ]);
     return apolloOptions;
   }
@@ -195,9 +194,6 @@ export class DollarApollo {
     const entry = this[`_${type}`][key];
     const rId = `__apollo_${entry._key}`;
     if (!this.el[`${rId}_callback`]) {
-      if (!entry.dataKey) {
-        entry.dataKey = key;
-      }
       if (typeof entry.options === 'string') {
         this._createPolymerObserver(rId, key, type);
       } else {
@@ -325,3 +321,4 @@ export const addGraphQLSubscriptions = (networkInterface, wsClient) => {
   });
   return ret;
 };
+
