@@ -148,9 +148,22 @@ You can then use your property as usual in your polymer component:
 
 You can add variables (read parameters) to your `gql` query by declaring `query` and `variables` in an object:
 
-Variable values are paths to Polymer element properties.
+Options can be computed properties or static.
 
-eg `variables:{limit:"route.limit"}` . In this graphql variable limit changes when the polymer property route.limit changes (similar to observer);
+eg 
+
+```js
+...
+apollo: {
+  query: someQuery,
+  options: 'computedFn(prop1, prop2)',
+},
+computedFn: function(prop1, prop2) {
+  return { variables: { var1: prop1, var2: prop2 + 10 } };
+},
+...
+```
+. In this graphql variables var1 and var2 change when the polymer properties prop1 and prop2 change (similar to computed feature);
 
 ```js
 // Apollo-specific options
@@ -161,15 +174,15 @@ apollo: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    // Reactive parameters
-    variables: {
-      message: 'property.path',
-    },
+    options: 'computedFn(prop1, prop2)',
+  },
+  computedFn: function(prop1, prop2) {
+    return { variables: { var1: prop1, var2: prop2 + 10 } };
   },
 },
 ```
 
-You can use the apollo `watchQuery` options in the object, like:
+In the above example you can use the apollo `watchQuery` options in the property ping or in the computed function return, like:
  - `forceFetch`
  - `fragments`
  - `returnPartialData`
@@ -187,12 +200,19 @@ apollo: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    variables: {
-      message: 'property.path'
-    },
-    // Additional options here
+    options: 'computedFn(prop1, prop2)',
+    // Additional options here. static.
     forceFetch: true,
   },
+},
+computedFn: function(prop1, prop2) {
+  // Additional options if added here becomes reactive
+  return {
+  variables: {
+    var1: prop1,
+  },
+    skip: prop2,
+  };
 },
 ```
 
@@ -248,6 +268,7 @@ And then use it in your polymer component:
 
 These are the available advanced options you can use:
 - `error(error)` is a hook called when there are errors, `error` being an Apollo error object with either a `graphQLErrors` property or a `networkError` property.
+- `success(result)` is a hook called when query/subscription returns successfully.
 - `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`.
 - `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
 - `skip` can be a path to a Polymer element boolean property used to set the state of the query subscribtion. Check example below.
@@ -263,10 +284,7 @@ apollo: {
       ping(message: $message)
     }`,
     // Reactive parameters
-    variables: {
-      // observes propery changes
-      message: "propety.path",
-    },
+    options: 'computedFn(prop1, prop2)',
     // Error handling
     error(error) {
       console.error('We\'ve got an error!', error);
@@ -325,8 +343,14 @@ apollo: {
         label
       }
     }`,
-    pollInterval: 300, // ms
+    options: 'computedFn(prop1, prop2)',
   },
+},
+computedFn: function(prop1, prop2) {
+  return {
+    variables: { var1: prop1 },
+    pollInterval: prop2, // ms
+  };
 },
 ```
 
@@ -399,17 +423,16 @@ apollo: {
         label
       }
     }`,
-    skip: 'isNotAuth', // ms
+    options: 'computedFn(prop1, prop2)',
   },
 },
-
-listeners: {
-  'auth-changed': '_onAuthChanged'
+computedFn: function(prop1, prop2) {
+  return {
+    variables: { var1: prop1 },
+    skip: prop2, // Boolean
+  };
 },
 
-_onAuthChanged: function(e) {
-  this.isNotAuth = !e.detail.userid;
-},
 ```
 
 ### dataKey option example
@@ -608,7 +631,7 @@ export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
 
 ```
 
-Use the `$apollo.subscribe()` method to subscribe to a GraphQL subscription that will get killed automatically when the component is destroyed:
+Use the `$apollo.subscribe()` method to subscribe to a GraphQL subscription that will get killed automatically when the component is detached. To disable this feature set onReady = true. :
 
 ```javascript
 attached() {
@@ -653,13 +676,9 @@ apollo: {
           type
         }
       }`,
+      options: 'getCity(city)',
       // Reactive variables
-      variables: {
-        // This works just like regular queries
-        // and will re-subscribe with the right variables
-        // each time the values change
-        type: 'City',
-      },
+
       // Result hook
       result(data) {
         console.log(data);
@@ -668,6 +687,16 @@ apollo: {
       },
     },
   },
+},
+getCity(city) {
+    return {
+      variables: {
+        // This works just like regular queries
+        // and will re-subscribe with the right variables
+        // each time the values change
+        type: city,
+      },
+    };
 },
 ```
 
@@ -727,11 +756,14 @@ Polymer({
           hasMore
         }
       }`,
-      // Initial variables
-      variables: {
-        page: 'page',
-        pageSize: 'pageSize',
+      options: {
+        // Initial variables
+        variables: {
+          page: 'page',
+          pageSize: 'pageSize',
+        },
       },
+
     },
   },
   showMore() {
