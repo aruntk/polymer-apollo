@@ -268,7 +268,7 @@ And then use it in your polymer component:
 
 These are the available advanced options you can use:
 - `error(error)` is a hook called when there are errors, `error` being an Apollo error object with either a `graphQLErrors` property or a `networkError` property.
-- `success(result)` is a hook called when query/subscription returns successfully.
+- `success(result)` is a hook called when query/subscription returns successfully. Note. result = { data, loading, networkStatus}
 - `loadingKey` will update the component data property you pass as the value. You should initialize this property to `false` in properties. When the query is loading, this property will be set to `true` and as soon as it no longer is, the property will be set to `false`.
 - `watchLoading(isLoading)` is a hook called when the loading state of the query changes.
 - `skip` can be a path to a Polymer element boolean property used to set the state of the query subscribtion. Check example below.
