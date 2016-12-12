@@ -8,7 +8,7 @@ export class DollarApollo {
     this.queries = {};
     this._query = {};
     this._subscription = {};
-    this._apolloSubscriptions = [];
+    this.attached = false;
   }
 
   get client() {
@@ -22,16 +22,16 @@ export class DollarApollo {
     return this.client.mutate.bind(this.client);
   }
 
-  watchQuery(options) {
+  watchQuery(options, key) {
     const observable = this.client.watchQuery(options);
-    return this._processObservable(observable);
+    return this._processObservable(observable, key, 'query');
   }
 
-  subscribe(options) {
+  subscribe(options, key) {
     const observable = this.client.subscribe(options);
-    return this._processObservable(observable);
+    return this._processObservable(observable, key, 'subscription');
   }
-  _processObservable(observable) {
+  _processObservable(observable, key, type) {
     const self = this;
     const _subscribe = observable.subscribe.bind(observable);
     observable.subscribe = (function (opt) {
@@ -40,10 +40,9 @@ export class DollarApollo {
       const _unsubscribe = sub.unsubscribe.bind(sub);
       sub.unsubscribe = function () {
         _unsubscribe();
-        self._apolloSubscriptions = self._apolloSubscriptions.filter(storeSub => storeSub !== sub);
+        self[`_${type}`][key].sub = null;
       };
-
-      self._apolloSubscriptions.push(sub);
+      self[`_${type}`][key].sub = sub;
       return sub;
     });
     return observable;
@@ -112,9 +111,11 @@ export class DollarApollo {
     const observable = entry.observable;
     const variables = options.variables;
     const opt = this._getSubscribeCallbacks(key, 'query');
-    observable.refetch(variables, {
-      forceFetch: !!options.forceFetch,
-    }).then(opt.next, opt.error);
+    if (observable) {
+      observable.refetch(variables, {
+        forceFetch: !!options.forceFetch,
+      }).then(opt.next, opt.error);
+    }
   }
 
   refetch(key) {
@@ -214,31 +215,34 @@ export class DollarApollo {
     this.el._addComplexObserverEffect(`${cbId}(${rId})`);
   }
   _polymerChange(type, key, options) {
-    const entry = this[`_${type}`][key];
-    entry._options = options;
-    const _observable = entry.observable;
-    const skip = !!options.skip;
-    const _sub = entry.sub;
-    if (skip) {
-      if (_sub) {
-        _sub.unsubscribe();
-        delete entry.sub;
-      }
-    } else if (_sub) {
-      _observable.setOptions(options);
-    } else {
-      const processArg = Object.assign({}, entry, options);
+    if (this.attached) {
+      const entry = this[`_${type}`][key];
+      entry._options = options;
+      const _observable = entry.observable;
+      const skip = !!options.skip;
+      const _sub = entry.sub;
+      if (skip) {
+        if (_sub) {
+          _sub.unsubscribe();
+          delete entry.sub;
+        }
+      } else if (_sub) {
+        console.log(_sub);
+        _observable.setOptions(options);
+      } else {
+        const processArg = Object.assign({}, entry, options);
 
-      const { sub, observable } = this[`${type}Process`](key, processArg);
-      entry.sub = sub;
-      entry.observable = observable;
+        const { sub, observable } = this[`${type}Process`](key, processArg);
+        entry.sub = sub;
+        entry.observable = observable;
+      }
+      this[`_${type}`][key] = entry;
     }
-    this[`_${type}`][key] = entry;
   }
   queryProcess(key, options) {
     if (key && options) {
       // Create observer
-      const observable = this.watchQuery(this._generateApolloOptions(options));
+      const observable = this.watchQuery(this._generateApolloOptions(options), key);
       this.queries[key] = observable;
       options.observable = observable;
       // subscribe observable
@@ -250,7 +254,7 @@ export class DollarApollo {
   subscriptionProcess(key, options) {
     if (key && options) {
       // Create observable
-      const observable = this.subscribe(this._generateApolloOptions(options));
+      const observable = this.subscribe(this._generateApolloOptions(options), key);
       this.subscriptions[key] = observable;
       options.observable = observable;
       this._subscription[key] = options;
@@ -259,6 +263,12 @@ export class DollarApollo {
       return { sub, observable };
     }
     return null;
+  }
+  unsubscribe(key, type) {
+    const entry = this[`_${type}`][key];
+    const sub = entry.sub;
+    sub.unsubscribe();
+    this[`${type}`][key] = _.omit(entry, 'sub');
   }
 }
 export class PolymerApollo {
@@ -270,20 +280,29 @@ export class PolymerApollo {
     this.$apollo = new DollarApollo(this);
     this.$apollo.createApolloOptions(apollo);
   }
+  ready() {
+    if (this.apollo.onReady) {
+      this.$apollo.attached = true;
+      this.$apollo.init(this);
+      this.$apollo.start(this);
+    }
+  }
   attached() {
     if (!this.apollo.onReady) {
+      this.$apollo.attached = true;
       this.$apollo.init(this);
       this.$apollo.start(this);
     }
   }
   detached() {
     if (!this.apollo.onReady) {
-      this.$apollo._apolloSubscriptions.forEach((sub) => {
-        sub.unsubscribe();
-      });
-      this.$apollo._apolloSubscriptions = null;
-      if (this.$apollo) {
-        this.$apollo = null;
+      this.$apollo.attached = false;
+      const $apollo = this.$apollo;
+      for (const key of Object.keys($apollo._query)) {
+        $apollo.unsubscribe(key, 'query');
+      }
+      for (const key of Object.keys($apollo._subscription)) {
+        $apollo.unsubscribe(key, 'subscription');
       }
     }
   }
@@ -305,3 +324,4 @@ export const addGraphQLSubscriptions = (networkInterface, wsClient) => {
   });
   return ret;
 };
+
