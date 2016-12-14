@@ -2,10 +2,11 @@
 
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
-[Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage)
+[GitHunt-Polymer](https://github.com/aruntk/GitHunt-Polymer) - An example of a client-side app built with Polymer and Apollo Client.
 
-[Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo)
+[Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage) - Polymer Apollo Hello World app
 
+[Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo) - Github api app using polymer-apollo meteor and [synthesis](https://github.com/meteorwebcomponents/synthesis)
 
 ## Table of contents
 
@@ -654,7 +655,19 @@ To make enable the websocket-based subscription, a bit of additional setup is re
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 // New Imports
 import { Client } from 'subscriptions-transport-ws';
-import { addGraphQLSubscriptions, PolymerApollo } from 'polymer-apollo';
+import { PolymerApollo } from 'polymer-apollo';
+import { print } from 'graphql-tag/printer';
+
+// quick way to add the subscribe and unsubscribe functions to the network interface
+const addGraphQLSubscriptions = (networkInterface, wsClient) => Object.assign(networkInterface, {
+  subscribe: (request, handler) => wsClient.subscribe({
+    query: print(request.query),
+    variables: request.variables,
+  }, handler),
+  unsubscribe: (id) => {
+    wsClient.unsubscribe(id);
+  },
+});
 
 // Create the network interface
 const networkInterface = createNetworkInterface({

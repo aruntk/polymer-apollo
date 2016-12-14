@@ -305,20 +305,3 @@ export class PolymerApollo {
   }
 }
 
-// quick way to add the subscribe and unsubscribe functions
-// to the network interface
-export const addGraphQLSubscriptions = (networkInterface, wsClient) => {
-  const ret = Object.assign(networkInterface, {
-    subscribe(request, handler) {
-      return wsClient.subscribe({
-        query: print(request.query),
-        variables: request.variables,
-      }, handler);
-    },
-    unsubscribe(id) {
-      wsClient.unsubscribe(id);
-    },
-  });
-  return ret;
-};
-
