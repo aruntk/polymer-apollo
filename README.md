@@ -198,7 +198,7 @@ For example, you could add the `forceFetch` apollo option like this:
 ```js
 apollo: {
   // Query with parameters
-  ping: {
+  pingQuery: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
@@ -216,8 +216,9 @@ computedFn: function(prop1, prop2) {
     skip: prop2,
   };
 },
+```
 
-Don't forget to initialize your property in your polymer component:
+Don't forget to initialize your property in your polymer component.
 
 ```js
 //my-element.js
