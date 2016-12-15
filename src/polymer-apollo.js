@@ -273,26 +273,34 @@ export class PolymerApollo {
   }
   beforeRegister() {
     const apollo = this.apollo;
-    this.$apollo = new DollarApollo(this);
-    this.$apollo.createApolloOptions(apollo);
+    if (apollo) {
+      this.$apollo = new DollarApollo(this);
+      this.$apollo.createApolloOptions(apollo);
+    }
   }
   created() {
-    this.$apollo.init(this);
+    const apollo = this.apollo;
+    if (apollo) {
+      this.$apollo.init(this);
+    }
   }
   ready() {
-    if (this.apollo.onReady) {
+    const apollo = this.apollo;
+    if (apollo && apollo.onReady) {
       this.$apollo.attached = true;
       this.$apollo.start(this);
     }
   }
   attached() {
-    if (!this.apollo.onReady) {
+    const apollo = this.apollo;
+    if (apollo && !this.apollo.onReady) {
       this.$apollo.attached = true;
       this.$apollo.start(this);
     }
   }
   detached() {
-    if (!this.apollo.onReady) {
+    const apollo = this.apollo;
+    if (apollo && !this.apollo.onReady) {
       this.$apollo.attached = false;
       const $apollo = this.$apollo;
       for (const key of Object.keys($apollo._query)) {
