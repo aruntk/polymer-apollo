@@ -273,8 +273,8 @@ export class PolymerApollo {
   }
   beforeRegister() {
     const apollo = this.apollo;
+    this.$apollo = new DollarApollo(this);
     if (apollo) {
-      this.$apollo = new DollarApollo(this);
       this.$apollo.createApolloOptions(apollo);
     }
   }
