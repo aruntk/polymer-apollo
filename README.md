@@ -1,5 +1,7 @@
 # Polymer-Apollo
 
+[![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dm/polymer-apollo.svg)](https://www.npmjs.com/package/vue-apollo)
+
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
 [GitHunt-Polymer](https://github.com/aruntk/GitHunt-Polymer) - An example of a client-side app built with Polymer and Apollo Client.
