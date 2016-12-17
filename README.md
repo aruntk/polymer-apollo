@@ -4,7 +4,11 @@
 
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
+## Examples
+
 [GitHunt-Polymer](https://github.com/aruntk/GitHunt-Polymer) - An example of a client-side app built with Polymer and Apollo Client.
+
+[NEWS App](https://github.com/aruntk/news) - A news app built using polymer-apollo
 
 [Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage) - Polymer Apollo Hello World app
 
