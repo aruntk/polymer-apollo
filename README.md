@@ -502,7 +502,7 @@ computedFn: function(prop1, prop2) {
 },
 ```
 
-### fragments
+### Fragments
 
 
 ```js
