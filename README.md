@@ -500,6 +500,7 @@ computedFn: function(prop1, prop2) {
     skip: prop2, // Boolean
   };
 },
+```
 
 ### fragments
 
