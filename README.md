@@ -155,7 +155,9 @@ You can then use your property as usual in your polymer component:
 
 You can add variables (read parameters) to your `gql` query by declaring `query` and `variables` in an object:
 
-Options can be computed properties or static.
+Options can be computed properties or static. 
+
+Initial values of variables should be given if options are computed, since polymer options wont be triggered if arguments are undefined, which maybe the case during first rendering.
 
 eg 
 ```js
@@ -163,7 +165,15 @@ eg
 apollo: {
   query1: {
     query: someQuery,
+    // watches prop1 and prop2 changes
+    // you should either initialize values of prop1,prop2 == !undefined or 
+    // set an initial value to variables property
+    variables: {
+      var1: 'blah',
+      var2: 'blah blah',
+    },
     options: 'computedFn(prop1, prop2)',
+
   }
 },
 computedFn: function(prop1, prop2) {
@@ -183,6 +193,9 @@ apollo: {
       ping(message: $message)
     }`,
     options: 'computedFn(prop1)',
+    variables: {
+      message: '',
+    },
   },
 },
 computedFn: function(prop1, prop2) {
@@ -209,6 +222,10 @@ apollo: {
       ping(message: $message)
     }`,
     options: 'computedFn(prop1, prop2)',
+    variables: {
+      message: 'blah',
+    },
+    skip: true,
     // Additional options here. static.
     forceFetch: true,
   },
@@ -276,6 +293,12 @@ And then use it in your polymer component:
 
 Options can be added in two ways - computed and static.
 
+For computed options you may want to give initial values since 
+
+> computing function is not invoked until all dependent properties are defined (!== undefined). So each dependent properties should have a default value defined in properties (or otherwise be initialized to a non-undefined value) to ensure the property is computed.
+
+from polymer doc https://www.polymer-project.org/1.0/docs/devguide/observers#computed-properties
+
 computed eg.
 
 ```js
@@ -296,7 +319,7 @@ computedFn: function(prop1, prop2) {
   variables: {
     message: prop1,
   },
-    skip: prop2,
+  skip: prop2,
   };
 },
 ```
