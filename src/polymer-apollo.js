@@ -211,7 +211,7 @@ export class DollarApollo {
     };
     this.el._addComplexObserverEffect(`${cbId}(${rId})`);
   }
-  _polymerChange(type, key, options) {
+  _polymerChange(type, key, options = {}) {
     if (this.attached) {
       const entry = this[`_${type}`][key];
       entry._options = options;
