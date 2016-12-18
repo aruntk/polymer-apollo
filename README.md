@@ -1,8 +1,14 @@
 # Polymer-Apollo
 
+[![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dm/polymer-apollo.svg)](https://www.npmjs.com/package/vue-apollo)
+
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
+## Examples
+
 [GitHunt-Polymer](https://github.com/aruntk/GitHunt-Polymer) - An example of a client-side app built with Polymer and Apollo Client.
+
+[NEWS App](https://github.com/aruntk/news) - A news app built using polymer-apollo
 
 [Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage) - Polymer Apollo Hello World app
 
@@ -498,8 +504,9 @@ computedFn: function(prop1, prop2) {
     skip: prop2, // Boolean
   };
 },
+```
 
-### fragments
+### Fragments
 
 
 ```js
