@@ -1,6 +1,6 @@
 # Polymer-Apollo
 
-[![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dm/polymer-apollo.svg)](https://www.npmjs.com/package/vue-apollo)
+[![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dm/polymer-apollo.svg)](https://www.npmjs.com/package/polymer-apollo)
 
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
