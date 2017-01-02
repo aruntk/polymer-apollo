@@ -908,7 +908,15 @@ Similar to fetchMore the following methods can be used. for queries $apollo.quer
 
 ---
 
-Contributors
+### Like it?
+
+:star: this repo
+
+### Found a bug?
+
+Raise an issue!
+
+### Contributors
 
 Anthony Hinsinger ([@atoy40](https://github.com/atoy40))
 
