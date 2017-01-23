@@ -1,6 +1,6 @@
 # Polymer-Apollo
 
-[![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dm/polymer-apollo.svg)](https://www.npmjs.com/package/polymer-apollo)
+[![Join the chat at https://gitter.im/aruntk/polymer](https://badges.gitter.im/aruntk/polymer.svg)](https://gitter.im/aruntk/polymer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dm/polymer-apollo.svg)](https://www.npmjs.com/package/polymer-apollo)
 
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
 
