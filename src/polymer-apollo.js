@@ -209,7 +209,7 @@ export class DollarApollo {
     this.el[cbId] = (n) => {
       $apollo._polymerChange(type, key, n);
     };
-    this.el._addComplexObserverEffect(`${cbId}(${rId})`);
+    this.el._createMethodObserver(`${cbId}(${rId})`);
   }
   _polymerChange(type, key, options = {}) {
     if (this.attached) {
