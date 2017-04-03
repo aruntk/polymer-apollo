@@ -1,5 +1,3 @@
-> work under progress for polymer 2.0 check [2.0 branch](https://github.com/aruntk/polymer-apollo/tree/2.0.0)
-
 # Polymer-Apollo
 
 [![Join the chat at https://gitter.im/aruntk/polymer](https://badges.gitter.im/aruntk/polymer.svg)](https://gitter.im/aruntk/polymer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dt/polymer-apollo.svg)](https://www.npmjs.com/package/polymer-apollo)
