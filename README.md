@@ -44,13 +44,12 @@
 import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client';
 
 // Create the apollo client
-const apolloClient = new ApolloClient({
+export const apolloClient = new ApolloClient({
   networkInterface: createNetworkInterface({
     uri: 'http://localhost:8080/graphql',
     transportBatching: true,
   })
 });
-export { apolloClient }
 ```
 
 ### Usage in components
@@ -767,10 +766,9 @@ const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
 );
 
 // Create the apollo client with the new network interface
-const apolloClient = new ApolloClient({
+export const apolloClient = new ApolloClient({
   networkInterface: networkInterfaceWithSubscriptions,
 });
-export {apolloClient};
 
 // Your app is now subscription-ready!
 
