@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign, func-names, no-console */
 import omit from 'lodash.omit';
+import clone from 'lodash.clone';
 
 export class DollarApollo {
   constructor(el) {
@@ -10,7 +11,9 @@ export class DollarApollo {
     this._subscription = {};
     this.attached = false;
   }
-
+  setEl(el) {
+    this.el = el;
+  }
   get client() {
     return this.el._apolloClient;
   }
@@ -280,6 +283,7 @@ export class PolymerApollo {
   }
   created() {
     const apollo = this.apollo;
+    this.$apollo = clone(this.$apollo);
     if (apollo) {
       this.$apollo.init(this);
     }
@@ -292,6 +296,7 @@ export class PolymerApollo {
     }
   }
   attached() {
+    this.$apollo.setEl(this);
     const apollo = this.apollo;
     if (apollo && !this.apollo.onReady) {
       this.$apollo.attached = true;
