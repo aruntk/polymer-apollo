@@ -11,9 +11,6 @@ export class DollarApollo {
     this._subscription = {};
     this.attached = false;
   }
-  setEl(el) {
-    this.el = el;
-  }
   get client() {
     return this.el._apolloClient;
   }
@@ -296,7 +293,6 @@ export class PolymerApollo {
     }
   }
   attached() {
-    this.$apollo.setEl(this);
     const apollo = this.apollo;
     if (apollo && !this.apollo.onReady) {
       this.$apollo.attached = true;
