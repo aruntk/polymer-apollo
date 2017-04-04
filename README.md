@@ -45,11 +45,11 @@ import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client
 
 // Create the apollo client
 const apolloClient = new ApolloClient({
+  addTypeName: true,
   networkInterface: createNetworkInterface({
     uri: 'http://localhost:8080/graphql',
     transportBatching: true,
-  }),
-  queryTransformer: addTypename,
+  })
 });
 export { apolloClient }
 ```
