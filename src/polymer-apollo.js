@@ -12,10 +12,6 @@ export class DollarApollo {
         this.attached = false;
     }
 
-    setEl(el) {
-        this.el = el;
-    }
-
     get client() {
         return this.el._apolloClient;
     }
@@ -277,7 +273,6 @@ export const PolymerApolloMixin = (superclass, options) => class extends supercl
         super.connectedCallback();
         const apollo = this.apollo;
         this.$apollo = clone(this.$apollo);
-        this.$apollo.setEl(this);
         if (apollo) {
             this.$apollo.attached = true;
             this.$apollo.init(this);
