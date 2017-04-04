@@ -43,7 +43,7 @@
 
 ```js
 //config.js
-import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client';
+import ApolloClient, { createNetworkInterface } from 'apollo-client';
 import { PolymerApollo } from 'polymer-apollo';
 
 // Create the apollo client
@@ -52,7 +52,6 @@ const apolloClient = new ApolloClient({
     uri: 'http://localhost:8080/graphql',
     transportBatching: true,
   }),
-  queryTransformer: addTypename,
 });
 
 //create a new polymer behavior from PolymerApollo class.
@@ -923,4 +922,5 @@ Raise an issue!
 Anthony Hinsinger ([@atoy40](https://github.com/atoy40))
 
 Arun Kumar T K ([@aruntk](https://github.com/aruntk))
+
 
