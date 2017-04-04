@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign, func-names, no-console */
 import omit from 'lodash.omit';
+import clone from 'lodash.clone';
 
 export class DollarApollo {
     constructor(el) {
@@ -9,6 +10,10 @@ export class DollarApollo {
         this._query = {};
         this._subscription = {};
         this.attached = false;
+    }
+
+    setEl(el) {
+        this.el = el;
     }
 
     get client() {
@@ -266,26 +271,27 @@ export const PolymerApolloMixin = (superclass, options) => class extends supercl
         const apollo = this.apollo;
         if (apollo) {
             this.$apollo.createApolloOptions(apollo);
+        }
+    }
+    connectedCallback() {
+        super.connectedCallback();
+        const apollo = this.apollo;
+        this.$apollo = clone(this.$apollo);
+        this.$apollo.setEl(this);
+        if (apollo) {
+            this.$apollo.attached = true;
             this.$apollo.init(this);
         }
     }
     ready() {
         super.ready();
         const apollo = this.apollo;
-        if (apollo && apollo.onReady) {
+        if (apollo) {
             this.$apollo.attached = true;
             this.$apollo.start(this);
         }
     }
-    connectedCallback() {
-        super.connectedCallback();
-        const apollo = this.apollo;
-        if (apollo && !apollo.onReady) {
-            this.$apollo.attached = true;
-            this.$apollo.start(this);
-        }
-    }
-    detached() {
+    disconnectedCallback() {
         const apollo = this.apollo;
         if (apollo && !this.apollo.onReady) {
             this.$apollo.attached = false;
