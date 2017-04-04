@@ -831,8 +831,8 @@ apollo: {
       options: 'cityComputed',
       // Reactive variables
 
-      // Result hook
-      result(data) {
+      // Success hook
+      success(data) {
         console.log(data);
         // Let's update the local data
         this.tags.push(data.tagAdded);
