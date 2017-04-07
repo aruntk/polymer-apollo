@@ -6,7 +6,6 @@
   "scripts": {
     "compile": "babel --presets es2015 -d lib/ src/",
     "prepublish": "npm run compile",
-	"postinstall": "npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
