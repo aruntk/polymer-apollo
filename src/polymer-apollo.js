@@ -256,7 +256,7 @@ export class DollarApollo {
         const entry = this[`_${type}`][key];
         const sub = entry.sub;
         sub.unsubscribe();
-        this[`${type}`][key] = _.omit(entry, 'sub');
+        this[`${type}`][key] = omit(entry, 'sub');
     }
 }
 export const PolymerApolloMixin = (superclass, options) => class extends superclass {
