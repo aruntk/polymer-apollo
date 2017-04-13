@@ -259,7 +259,7 @@ export class DollarApollo {
         this[`${type}`][key] = omit(entry, 'sub');
     }
 }
-export const PolymerApolloMixin = (superclass, options) => class extends superclass {
+export const PolymerApolloMixin = (options, superclass) => class extends superclass {
     constructor() {
         super();
         this._apolloClient = options.apolloClient;
