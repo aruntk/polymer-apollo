@@ -74,7 +74,7 @@ class MyElement extends PolymerApolloMixin({apolloClient}, Polymer.Element) {
         return 'my-element'
     }
 
-    static get apollo() {
+    get apollo() {
         // Apollo specific options
     }
     ...
@@ -99,7 +99,7 @@ import gql from 'graphql-tag';
 Put the [gql](http://docs.apollostack.com/apollo-client/core.html#gql) query directly as the value:
 
 ```js
-static get apollo() {
+get apollo() {
   return {
     // Simple query that will update the 'hello' polymer property
     hello: gql`{hello}`,
@@ -178,7 +178,7 @@ static get properties() {
     }
   };
 }
-static get apollo() {
+get apollo() {
   return {
     query1: {
       query: someQuery,
@@ -211,7 +211,7 @@ static get properties() {
   };
 }
 // Apollo-specific options
-static get apollo() {
+get apollo() {
   return {
     // Query with parameters
     ping: {
@@ -252,7 +252,7 @@ static get properties() {
   };
 }
 
-static get apollo() {
+get apollo() {
   // Query with parameters
   return {
     pingQuery: {
@@ -350,7 +350,7 @@ static get properties() {
     }
   };
 }
-static get apollo() {
+get apollo() {
   return {
   // Query with parameters
   ping: {
@@ -377,7 +377,7 @@ computedFn: function(prop1, prop2) {
 static eg.
 
 ```js
-static get apollo() {
+get apollo() {
   return {
   // Query with parameters
   ping: {
@@ -425,7 +425,7 @@ static get properties() {
   };
 }
 // Apollo-specific options
-static get apollo() {
+get apollo() {
   return {
   // Advanced query with parameters
   pingMessage: {
@@ -502,7 +502,7 @@ static get properties() {
   };
 }
 // Apollo-specific options
-static get apollo() {
+get apollo() {
   return {
   // 'tags' property of your polymer element
   tags: {
@@ -584,7 +584,7 @@ static get properties() {
 }
 
 // Apollo-specific options
-static get apollo() {
+get apollo() {
   return {
   // 'tags' property of your polymer element
   tags: {
@@ -846,7 +846,7 @@ static get properties() {
     }
   };
 }
-static get apollo() {
+get apollo() {
   return {
   // Subscriptions
   subscribe: {
@@ -933,7 +933,7 @@ class MyElement extends PolymerApolloMixin({apolloClient}, Polymer.Element) {
       },
     }
   }
-  static get apollo() {
+  get apollo() {
     return {
     // Pages
     tagsPage: {
