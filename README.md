@@ -46,8 +46,6 @@
 
 ```js
 //config.js
-import ApolloClient, { createNetworkInterface } from 'apollo-client';
-import { PolymerApollo } from 'polymer-apollo';
 import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client';
 
 // Create the apollo client
