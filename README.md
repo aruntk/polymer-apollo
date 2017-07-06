@@ -18,6 +18,7 @@
 [Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo) - Github api app using polymer-apollo meteor and [synthesis](https://github.com/meteorwebcomponents/synthesis)
 
 
+
 ## Table of contents
 
 - [Installation](#installation)
@@ -35,9 +36,11 @@
 - [Subscriptions](#subscriptions)
 - [Pagination with `fetchMore`](#pagination-with-fetchmore)
 
+
 ## Installation
 
     npm install --save polymer-apollo apollo-client
+
 
 
 ## Usage
@@ -59,23 +62,21 @@ export const apolloClient = new ApolloClient({
 
 ### Usage in components
 
-Add the created behavior in your element's behaviors array
-
-To declare apollo queries in your polymer component, add an `apollo` object :
-
 ```js
 //my-element.js
+// if you want the es5 compiled version use
+// import { PolymerApolloMixin } from 'polymer-apollo/es5';
 import { PolymerApolloMixin } from 'polymer-apollo';
 import { apolloClient } from './config.js';
 
-class MyElement extends PolymerApolloMixin(Polymer.Element, {apolloClient}) {
+class MyElement extends PolymerApolloMixin({apolloClient}, Polymer.Element) {
     static get is() {
         return 'my-element'
     }
 
-    apollo: {
+    static get apollo() {
         // Apollo specific options
-    },
+    }
     ...
 });
 ```
@@ -98,10 +99,12 @@ import gql from 'graphql-tag';
 Put the [gql](http://docs.apollostack.com/apollo-client/core.html#gql) query directly as the value:
 
 ```js
-apollo: {
-  // Simple query that will update the 'hello' polymer property
-  hello: gql`{hello}`,
-},
+static get apollo() {
+  return {
+    // Simple query that will update the 'hello' polymer property
+    hello: gql`{hello}`,
+  };
+}
 ```
 
 Don't forget to initialize your property in your polymer component:
@@ -175,23 +178,24 @@ static get properties() {
     }
   };
 }
-apollo: {
-  query1: {
-    query: someQuery,
-    // watches prop1 and prop2 changes
-    // you should either initialize values of prop1,prop2 == !undefined or 
-    // set an initial value to variables property
-    variables: {
-      var1: 'blah',
-      var2: 'blah blah',
-    },
-    options: 'computedProp',
-
-  }
+static get apollo() {
+  return {
+    query1: {
+      query: someQuery,
+      // watches prop1 and prop2 changes
+      // you should either initialize values of prop1,prop2 == !undefined or 
+      // set an initial value to variables property
+      variables: {
+        var1: 'blah',
+        var2: 'blah blah',
+      },
+      options: 'computedProp',
+    }
+  };
 }
 computeFn: function(prop1, prop2) {
   return { variables: { var1: prop1, var2: prop2 + 10 } };
-},
+}
 ...
 ```
 . In this graphql variables var1 and var2 change when the polymer properties prop1 and prop2 change (similar to computed feature);
@@ -207,18 +211,20 @@ static get properties() {
   };
 }
 // Apollo-specific options
-apollo: {
-  // Query with parameters
-  ping: {
-    // gql query
-    query: gql`query PingMessage($message: String!) {
+static get apollo() {
+  return {
+    // Query with parameters
+    ping: {
+      // gql query
+      query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    options: 'computedProp',
-    variables: {
-      message: '',
+      options: 'computedProp',
+      variables: {
+        message: '',
+      },
     },
-  },
+  };
 }
 computedFn: function(prop1, prop2) {
   return { variables: { message: `${prop1} ping...`} };
@@ -246,9 +252,10 @@ static get properties() {
   };
 }
 
-apollo: {
+static get apollo() {
   // Query with parameters
-  pingQuery: {
+  return {
+    pingQuery: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
@@ -259,8 +266,9 @@ apollo: {
     skip: true,
     // Additional options here. static.
     forceFetch: true,
-  },
-},
+  };
+  }
+}
 computedFn: function(prop1, prop2) {
   // Additional options if added here becomes reactive
   return {
@@ -269,7 +277,7 @@ computedFn: function(prop1, prop2) {
     },
     skip: prop2,
   };
-},
+}
 ```
 
 Don't forget to initialize your property in your polymer component.
@@ -342,7 +350,8 @@ static get properties() {
     }
   };
 }
-apollo: {
+static get apollo() {
+  return {
   // Query with parameters
   ping: {
     query: gql`query PingMessage($message: String!) {
@@ -351,8 +360,9 @@ apollo: {
     options: 'computedProp',
     // Additional options here. static.
     forceFetch: true,
-  },
-},
+  };
+  }
+}
 computedFn: function(prop1, prop2) {
   // Additional options if added here becomes reactive
   return {
@@ -361,13 +371,14 @@ computedFn: function(prop1, prop2) {
     },
     skip: prop2,
   };
-},
+}
 ```
 
 static eg.
 
 ```js
-apollo: {
+static get apollo() {
+  return {
   // Query with parameters
   ping: {
     query: gql`query PingMessage($message: String!) {
@@ -382,8 +393,8 @@ apollo: {
   },
     // Additional options here. static. you can add skip here also
     forceFetch: true,
-  },
-},
+  };
+}
 ```
 
 #### Advanced Options
@@ -414,7 +425,8 @@ static get properties() {
   };
 }
 // Apollo-specific options
-apollo: {
+static get apollo() {
+  return {
   // Advanced query with parameters
   pingMessage: {
     query: gql`query PingMessage($message: String!) {
@@ -440,10 +452,11 @@ apollo: {
       // isLoading is a boolean
     },
   },
-},
+  };
+}
 computedFn: function(prop1, prop2) {
   return { variables: { message: `${prop1} ping...`}, skip: prop2 };
-},
+}
 ```
 
 
@@ -457,7 +470,7 @@ Use $`apollo.refetch(key);`
 
 ```js
 // Apollo-specific options
-apollo: {
+{
   // 'tags' property of your polymer element
   tags: {
     query: gql`query tagList {
@@ -489,7 +502,8 @@ static get properties() {
   };
 }
 // Apollo-specific options
-apollo: {
+static get apollo() {
+  return {
   // 'tags' property of your polymer element
   tags: {
     query: gql`query tagList {
@@ -500,13 +514,14 @@ apollo: {
     }`,
     options: 'computedProp',
   },
-},
+  };
+}
 computedFn: function(prop1, prop2) {
   return {
     variables: { var1: prop1 },
     pollInterval: prop2, // ms
   };
-},
+}
 ```
 
 Here is how the server-side looks like:
@@ -569,7 +584,8 @@ static get properties() {
 }
 
 // Apollo-specific options
-apollo: {
+static get apollo() {
+  return {
   // 'tags' property of your polymer element
   tags: {
     query: gql`query tagList {
@@ -580,13 +596,14 @@ apollo: {
     }`,
     options: 'computedProp',
   },
-},
+  };
+}
 computedFn: function(prop1, prop2) {
   return {
     variables: { var1: prop1 },
     skip: prop2, // Boolean
   };
-},
+}
 ```
 
 
@@ -607,7 +624,7 @@ Embed the fragment in your query document directly with:
 ```js
 import gql from 'graphql-tag';
 // Apollo-specific options
-apollo: {
+return {
   // 'tags' property of your polymer element
   tags: {
     query: gql`query tagList {
@@ -620,7 +637,7 @@ apollo: {
     }
     ${fragment}`
   },
-},
+}
 ```
 
 
@@ -741,6 +758,7 @@ export const resolvers = {
 };
 ```
 
+
 ## Subscriptions
 
 To make enable the websocket-based subscription, a bit of additional setup is required:
@@ -828,7 +846,8 @@ static get properties() {
     }
   };
 }
-apollo: {
+static get apollo() {
+  return {
   // Subscriptions
   subscribe: {
     // When a tag is added
@@ -851,7 +870,8 @@ apollo: {
       },
     },
   },
-},
+  };
+}
 getCity(city) {
     return {
       variables: {
@@ -861,7 +881,7 @@ getCity(city) {
         type: city,
       },
     };
-},
+}
 ```
 
 You can then access the subscription `ObservableQuery` object with `this.$apollo.subscriptions.<name>`.
@@ -893,7 +913,7 @@ import { PolymerApolloMixin } from 'polymer-apollo';
 import { apolloClient } from './config.js';
 import gql from 'graphql-tag';
 
-class MyElement extends PolymerApolloMixin(Polymer.Element, {apolloClient}) {
+class MyElement extends PolymerApolloMixin({apolloClient}, Polymer.Element) {
   static get is() {
     return 'example-element'
   }
@@ -913,7 +933,8 @@ class MyElement extends PolymerApolloMixin(Polymer.Element, {apolloClient}) {
       },
     }
   }
-  apollo: {
+  static get apollo() {
+    return {
     // Pages
     tagsPage: {
       // GraphQL Query
@@ -936,6 +957,7 @@ class MyElement extends PolymerApolloMixin(Polymer.Element, {apolloClient}) {
       },
 
     },
+    };
   }
   showMore() {
     this.page ++;
@@ -997,3 +1019,4 @@ Anthony Hinsinger ([@atoy40](https://github.com/atoy40))
 Arun Kumar T K ([@aruntk](https://github.com/aruntk))
 
 Edward Watson ([@edge0701](https://github.com/edge0701))
+
