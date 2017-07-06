@@ -1,10 +1,10 @@
 {
   "name": "polymer-apollo",
-  "version": "2.0.0-rc.2",
+  "version": "2.0.0-rc.3",
   "description": "Polymer Apollo Integration",
   "main": "index.js",
   "scripts": {
-    "compile": "babel --presets es2015 -d lib/ src/",
+    "compile": "babel --presets es2015 -d dist/ src/",
     "prepublish": "npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
