@@ -1,6 +1,7 @@
-> work under progress for polymer 2.0 check [2.0 branch](https://github.com/aruntk/polymer-apollo/tree/2.0.0)
+> Note: For Polymer 1.x checkout branch [1.x](https://github.com/aruntk/polymer-apollo/tree/1.x)
 
 # Polymer-Apollo
+
 
 [![Join the chat at https://gitter.im/aruntk/polymer](https://badges.gitter.im/aruntk/polymer.svg)](https://gitter.im/aruntk/polymer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dt/polymer-apollo.svg)](https://www.npmjs.com/package/polymer-apollo)
 
@@ -15,6 +16,7 @@
 [Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage) - Polymer Apollo Hello World app
 
 [Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo) - Github api app using polymer-apollo meteor and [synthesis](https://github.com/meteorwebcomponents/synthesis)
+
 
 ## Table of contents
 
@@ -37,6 +39,7 @@
 
     npm install --save polymer-apollo apollo-client
 
+
 ## Usage
 
 ### Configuration
@@ -45,17 +48,15 @@
 //config.js
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 import { PolymerApollo } from 'polymer-apollo';
+import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client';
 
 // Create the apollo client
-const apolloClient = new ApolloClient({
+export const apolloClient = new ApolloClient({
   networkInterface: createNetworkInterface({
     uri: 'http://localhost:8080/graphql',
     transportBatching: true,
-  }),
+  })
 });
-
-//create a new polymer behavior from PolymerApollo class.
-export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
 ```
 
 ### Usage in components
@@ -66,10 +67,14 @@ To declare apollo queries in your polymer component, add an `apollo` object :
 
 ```js
 //my-element.js
-import { PolymerApolloBehavior } from "./config.js";
-Polymer({
-    is:"my-element",
-    behaviors:[ PolymerApolloBehavior ],
+import { PolymerApolloMixin } from 'polymer-apollo';
+import { apolloClient } from './config.js';
+
+class MyElement extends PolymerApolloMixin(Polymer.Element, {apolloClient}) {
+    static get is() {
+        return 'my-element'
+    }
+
     apollo: {
         // Apollo specific options
     },
@@ -78,6 +83,7 @@ Polymer({
 ```
 
 You can access the [apollo-client](http://dev.apollodata.com/core/apollo-client-api.html) instance with `this.$apollo.client` in all your polymer components.
+
 
 ### Queries
 
@@ -163,6 +169,14 @@ Initial values of variables should be given if options are computed, since polym
 eg 
 ```js
 ...
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
 apollo: {
   query1: {
     query: someQuery,
@@ -173,11 +187,11 @@ apollo: {
       var1: 'blah',
       var2: 'blah blah',
     },
-    options: 'computedFn(prop1, prop2)',
+    options: 'computedProp',
 
   }
-},
-computedFn: function(prop1, prop2) {
+}
+computeFn: function(prop1, prop2) {
   return { variables: { var1: prop1, var2: prop2 + 10 } };
 },
 ...
@@ -185,6 +199,15 @@ computedFn: function(prop1, prop2) {
 . In this graphql variables var1 and var2 change when the polymer properties prop1 and prop2 change (similar to computed feature);
 
 ```js
+...
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
 // Apollo-specific options
 apollo: {
   // Query with parameters
@@ -193,15 +216,15 @@ apollo: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    options: 'computedFn(prop1)',
+    options: 'computedProp',
     variables: {
       message: '',
     },
   },
-},
+}
 computedFn: function(prop1, prop2) {
   return { variables: { message: `${prop1} ping...`} };
-},
+}
 ```
 
 In the above example you can use the apollo `watchQuery` options in the property ping or in the computed function return, like:
@@ -216,13 +239,22 @@ See the [apollo doc](http://dev.apollodata.com/core/apollo-client-api.html#Apoll
 For example, you could add the `forceFetch` apollo option like this:
 
 ```js
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
+
 apollo: {
   // Query with parameters
   pingQuery: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    options: 'computedFn(prop1, prop2)',
+    options: 'computedProp',
     variables: {
       message: 'blah',
     },
@@ -234,9 +266,9 @@ apollo: {
 computedFn: function(prop1, prop2) {
   // Additional options if added here becomes reactive
   return {
-  variables: {
-    message: prop1,
-  },
+    variables: {
+      message: prop1,
+    },
     skip: prop2,
   };
 },
@@ -247,7 +279,7 @@ Don't forget to initialize your property in your polymer component.
 ```js
 //my-element.js
 ...
-properties {
+static get properties() {
     // Initialize your apollo data
     ping: String,
 },
@@ -303,13 +335,22 @@ from polymer doc https://www.polymer-project.org/1.0/docs/devguide/observers#com
 computed eg.
 
 ```js
+...
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
 apollo: {
   // Query with parameters
   ping: {
     query: gql`query PingMessage($message: String!) {
       ping(message: $message)
     }`,
-    options: 'computedFn(prop1,prop2)',
+    options: 'computedProp',
     // Additional options here. static.
     forceFetch: true,
   },
@@ -317,10 +358,10 @@ apollo: {
 computedFn: function(prop1, prop2) {
   // Additional options if added here becomes reactive
   return {
-  variables: {
-    message: prop1,
-  },
-  skip: prop2,
+    variables: {
+      message: prop1,
+    },
+    skip: prop2,
   };
 },
 ```
@@ -340,7 +381,7 @@ apollo: {
       },
       skip: true,
     },
-    },
+  },
     // Additional options here. static. you can add skip here also
     forceFetch: true,
   },
@@ -365,6 +406,15 @@ These are the available advanced options you can use:
 
 
 ```js
+...
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
 // Apollo-specific options
 apollo: {
   // Advanced query with parameters
@@ -373,7 +423,7 @@ apollo: {
       ping(message: $message)
     }`,
     // Reactive parameters
-    options: 'computedFn(prop1, prop2)',
+    options: 'computedProp',
 
     // Loading state
     // loadingKey is the name of the data property
@@ -397,6 +447,7 @@ computedFn: function(prop1, prop2) {
   return { variables: { message: `${prop1} ping...`}, skip: prop2 };
 },
 ```
+
 
 ### Refetch Query
 
@@ -424,11 +475,21 @@ refetchTags(){
 }
 ```
 
+
 ### Reactive Query Example
 
 Here is a reactive query example using polling:
 
 ```js
+...
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
 // Apollo-specific options
 apollo: {
   // 'tags' property of your polymer element
@@ -439,7 +500,7 @@ apollo: {
         label
       }
     }`,
-    options: 'computedFn(prop1, prop2)',
+    options: 'computedProp',
   },
 },
 computedFn: function(prop1, prop2) {
@@ -495,19 +556,19 @@ export const resolvers = {
   },
 };
 ```
+
 ### Skip query example
 
 ```js
-properties: {
-  ...
-
-  isNotAuth: {
-    type: Boolean,
-    value: true
-  }
-},
-
 ...
+static get properties() {
+  return {
+    computedProp: {
+      type: Object,
+      computed: 'computeFn(prop1, prop2)'
+    }
+  };
+}
 
 // Apollo-specific options
 apollo: {
@@ -519,7 +580,7 @@ apollo: {
         label
       }
     }`,
-    options: 'computedFn(prop1, prop2)',
+    options: 'computedProp',
   },
 },
 computedFn: function(prop1, prop2) {
@@ -529,6 +590,7 @@ computedFn: function(prop1, prop2) {
   };
 },
 ```
+
 
 ### Fragments
 
@@ -562,6 +624,7 @@ apollo: {
   },
 },
 ```
+
 
 ### Mutations
 
@@ -679,6 +742,7 @@ export const resolvers = {
   },
 };
 ```
+
 ## Subscriptions
 
 To make enable the websocket-based subscription, a bit of additional setup is required:
@@ -687,7 +751,6 @@ To make enable the websocket-based subscription, a bit of additional setup is re
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 // New Imports
 import { Client } from 'subscriptions-transport-ws';
-import { PolymerApollo } from 'polymer-apollo';
 import { print } from 'graphql-tag/printer';
 
 // quick way to add the subscribe and unsubscribe functions to the network interface
@@ -717,12 +780,9 @@ const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
 );
 
 // Create the apollo client with the new network interface
-const apolloClient = new ApolloClient({
+export const apolloClient = new ApolloClient({
   networkInterface: networkInterfaceWithSubscriptions,
 });
-
-//create a new polymer behavior from PolymerApollo class.
-export const PolymerApolloBehavior = new PolymerApollo({apolloClient})
 
 // Your app is now subscription-ready!
 
@@ -762,6 +822,14 @@ attached() {
 You can declare subscriptions in the `apollo` option with the `subscribe` keyword:
 
 ```javascript
+static get properties() {
+  return {
+    cityComputed: {
+      type: Object,
+      computed: 'getCity(city)'
+    }
+  };
+}
 apollo: {
   // Subscriptions
   subscribe: {
@@ -774,11 +842,11 @@ apollo: {
           type
         }
       }`,
-      options: 'getCity(city)',
+      options: 'cityComputed',
       // Reactive variables
 
-      // Result hook
-      result(data) {
+      // Success hook
+      success(data) {
         console.log(data);
         // Let's update the local data
         this.tags.push(data.tagAdded);
@@ -799,6 +867,7 @@ getCity(city) {
 ```
 
 You can then access the subscription `ObservableQuery` object with `this.$apollo.subscriptions.<name>`.
+
 
 ## Pagination with `fetchMore`
 
@@ -822,24 +891,30 @@ Use the `fetchMore()` method on the query:
 </template>
 
 <script>
+import { PolymerApolloMixin } from 'polymer-apollo';
+import { apolloClient } from './config.js';
 import gql from 'graphql-tag';
 
-Polymer({
-  is: 'example-element',
-  properties: {
-    page: {
-      type: Number,
-      value: 0,
-    },
-    pageSize: {
-      type: Number,
-      value: 10,
-    },
-    showMoreEnabled: {
-      type: Number,
-      value: true,
-    },
-  },
+class MyElement extends PolymerApolloMixin(Polymer.Element, {apolloClient}) {
+  static get is() {
+    return 'example-element'
+  }
+  static get properties() {
+    return {
+      page: {
+        type: Number,
+        value: 0,
+      },
+      pageSize: {
+        type: Number,
+        value: 10,
+      },
+      showMoreEnabled: {
+        type: Number,
+        value: true,
+      },
+    }
+  }
   apollo: {
     // Pages
     tagsPage: {
@@ -863,7 +938,7 @@ Polymer({
       },
 
     },
-  },
+  }
   showMore() {
     this.page ++;
     // Fetch more data and transform the original result
@@ -889,7 +964,7 @@ Polymer({
         };
       },
     });
-  },
+  }
 };
 </script>
 ```
@@ -923,4 +998,4 @@ Anthony Hinsinger ([@atoy40](https://github.com/atoy40))
 
 Arun Kumar T K ([@aruntk](https://github.com/aruntk))
 
-
+Edward Watson ([@edge0701](https://github.com/edge0701))

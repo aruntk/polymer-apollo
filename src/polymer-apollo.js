@@ -18,6 +18,7 @@ export class DollarApollo {
   get query() {
     return this.client.query.bind(this.client);
   }
+
   get mutate() {
     return this.client.mutate.bind(this.client);
   }
@@ -31,6 +32,7 @@ export class DollarApollo {
     const observable = this.client.subscribe(options);
     return this._processObservable(observable, key, 'subscription');
   }
+
   _processObservable(observable, key, type) {
     const self = this;
     const _subscribe = observable.subscribe.bind(observable);
@@ -47,6 +49,7 @@ export class DollarApollo {
     });
     return observable;
   }
+
   _getSubscribeCallbacks(key, type) {
     const el = this.el;
     const $apollo = this;
@@ -79,8 +82,10 @@ export class DollarApollo {
         entry.error.call(el, error);
       }
     }
+
     return { next: nextResult, error: catchError };
   }
+
   _subscribeObservable(key, observable, type) {
     const opt = this._getSubscribeCallbacks(key, type);
     const sub = observable.subscribe(opt);
@@ -138,6 +143,7 @@ export class DollarApollo {
     ]);
     return apolloOptions;
   }
+
   createApolloOptions(apollo) {
     if (apollo) {
       const queries = omit(apollo, [
@@ -154,21 +160,14 @@ export class DollarApollo {
       }
     }
   }
+
   _createOptionsProp(key, type) {
     const options = this[`_${type}`][key].options;
     const rnd = Math.floor(1000000000 + (Math.random() * 9000000000));
-    const rId = `__apollo_${rnd}`;
+    var rId = `__apollo_${rnd}`;
     this[`_${type}`][key]._key = rnd;
-    if (typeof options === 'string') {
-      // options = computed property with random id
-      const optProp = {};
-      optProp[rId] = {
-        type: Object,
-        computed: options,
-      };
-      this.el.properties = Object.assign({}, this.el.properties, optProp);
-    }
   }
+
   init(el) {
     this.el = el;
     for (const key of Object.keys(this._query)) {
@@ -178,18 +177,20 @@ export class DollarApollo {
       this._processOptions(key, 'subscription');
     }
   }
+
   start(el) {
     for (const key of Object.keys(this._query)) {
       const entry = this._query[key];
-      const options = entry._options || el[`__apollo_${entry._key}`];
+      const options = entry._options || el[entry.options];
       this._polymerChange('query', key, options);
     }
     for (const key of Object.keys(this._subscription)) {
       const entry = this._subscription[key];
-      const options = entry._options || el[`__apollo_${entry._key}`];
+      const options = entry._options || el[entry.options];
       this._polymerChange('subscription', key, options);
     }
   }
+
   _processOptions(key, type) {
     const entry = this[`_${type}`][key];
     const rId = `__apollo_${entry._key}`;
@@ -202,6 +203,7 @@ export class DollarApollo {
       this[`_${type}`][key] = entry;
     }
   }
+
   _createPolymerObserver(rId, key, type) {
     const $apollo = this;
     // unique id for observer callback
@@ -209,8 +211,9 @@ export class DollarApollo {
     this.el[cbId] = (n) => {
       $apollo._polymerChange(type, key, n);
     };
-    this.el._addComplexObserverEffect(`${cbId}(${rId})`);
+    this.el._createPropertyObserver(this[`_${type}`][key].options, cbId);
   }
+
   _polymerChange(type, key, options = {}) {
     if (this.attached) {
       const entry = this[`_${type}`][key];
@@ -235,6 +238,7 @@ export class DollarApollo {
       this[`_${type}`][key] = entry;
     }
   }
+
   queryProcess(key, options) {
     if (key && options) {
       // Create observer
@@ -247,6 +251,7 @@ export class DollarApollo {
     }
     return null;
   }
+
   subscriptionProcess(key, options) {
     if (key && options) {
       // Create observable
@@ -260,6 +265,7 @@ export class DollarApollo {
     }
     return null;
   }
+
   unsubscribe(key, type) {
     const entry = this[`_${type}`][key];
     const sub = entry.sub;
@@ -267,39 +273,38 @@ export class DollarApollo {
     this[`${type}`][key] = omit(entry, 'sub');
   }
 }
-export class PolymerApollo {
-  constructor(options) {
+export const PolymerApolloMixin = (options, superclass) => class extends superclass {
+  constructor() {
+    super();
     this._apolloClient = options.apolloClient;
-  }
-  beforeRegister() {
-    const apollo = this.apollo;
     this.$apollo = new DollarApollo(this);
+    const apollo = this.apollo;
     if (apollo) {
       this.$apollo.createApolloOptions(apollo);
     }
   }
-  created() {
+
+  connectedCallback() {
+    super.connectedCallback();
     const apollo = this.apollo;
     this.$apollo = clone(this.$apollo);
     if (apollo) {
+      this.$apollo.attached = true;
       this.$apollo.init(this);
     }
   }
+
   ready() {
+    super.ready();
     const apollo = this.apollo;
-    if (apollo && apollo.onReady) {
+    if (apollo) {
       this.$apollo.attached = true;
       this.$apollo.start(this);
     }
   }
-  attached() {
-    const apollo = this.apollo;
-    if (apollo && !this.apollo.onReady) {
-      this.$apollo.attached = true;
-      this.$apollo.start(this);
-    }
-  }
-  detached() {
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
     const apollo = this.apollo;
     if (apollo && !this.apollo.onReady) {
       this.$apollo.attached = false;
@@ -313,4 +318,3 @@ export class PolymerApollo {
     }
   }
 }
-
