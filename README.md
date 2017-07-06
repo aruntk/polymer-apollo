@@ -1,5 +1,7 @@
 # Polymer-Apollo
 
+> Note: For Polymer 1.x checkout branch [1.x](https://github.com/aruntk/polymer-apollo/tree/1.x)
+
 [![Join the chat at https://gitter.im/aruntk/polymer](https://badges.gitter.im/aruntk/polymer.svg)](https://gitter.im/aruntk/polymer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm](https://img.shields.io/npm/v/polymer-apollo.svg) ![npm](https://img.shields.io/npm/dt/polymer-apollo.svg)](https://www.npmjs.com/package/polymer-apollo)
 
 [Polymer](https://www.polymer-project.org) [apollo](http://www.apollostack.com/) integration.
@@ -13,6 +15,7 @@
 [Polymer Apollo Frontpage App](https://github.com/aruntk/polymer-apollo-frontpage) - Polymer Apollo Hello World app
 
 [Polymer Apollo Meteor App](https://github.com/aruntk/polymer-apollo-meteor-demo) - Github api app using polymer-apollo meteor and [synthesis](https://github.com/meteorwebcomponents/synthesis)
+
 
 ## Table of contents
 
@@ -34,6 +37,7 @@
 ## Installation
 
     npm install --save polymer-apollo apollo-client
+
 
 ## Usage
 
@@ -983,3 +987,4 @@ Anthony Hinsinger ([@atoy40](https://github.com/atoy40))
 
 Arun Kumar T K ([@aruntk](https://github.com/aruntk))
 
+Edward Watson ([@edge0701](https://github.com/edge0701))
