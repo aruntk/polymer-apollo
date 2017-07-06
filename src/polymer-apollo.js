@@ -305,6 +305,7 @@ export const PolymerApolloMixin = (options, superclass) => class extends supercl
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     const apollo = this.apollo;
     if (apollo && !this.apollo.onReady) {
       this.$apollo.attached = false;
