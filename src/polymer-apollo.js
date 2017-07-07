@@ -160,7 +160,6 @@ export class DollarApollo {
       }
     }
   }
-
   _createOptionsProp(key, type) {
     const options = this[`_${type}`][key].options;
     const rnd = Math.floor(1000000000 + (Math.random() * 9000000000));
@@ -207,11 +206,16 @@ export class DollarApollo {
   _createPolymerObserver(rId, key, type) {
     const $apollo = this;
     // unique id for observer callback
-    const cbId = `${rId}_callback`;
-    this.el[cbId] = (n) => {
-      $apollo._polymerChange(type, key, n);
-    };
-    this.el._createPropertyObserver(this[`_${type}`][key].options, cbId);
+    const options = this[`_${type}`][key].options;
+    if (typeof options === 'string') {
+      const cbId = `${rId}_callback`;
+      const propId = `${rId}_prop`;
+      this.el[cbId] = (opt) => {
+        $apollo._polymerChange(type, key, opt);
+      };
+      this.el._createComputedProperty(propId, options);
+      this.el._createPropertyObserver(propId, cbId);
+    }
   }
 
   _polymerChange(type, key, options = {}) {
@@ -318,3 +322,4 @@ export const PolymerApolloMixin = (options, superclass) => class extends supercl
     }
   }
 }
+

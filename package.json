@@ -1,6 +1,6 @@
 {
   "name": "polymer-apollo",
-  "version": "2.0.0-rc.5",
+  "version": "2.0.0-rc.6",
   "description": "Polymer Apollo Integration",
   "main": "index.js",
   "scripts": {
