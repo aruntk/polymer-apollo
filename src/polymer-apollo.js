@@ -181,12 +181,16 @@ export class DollarApollo {
     for (const key of Object.keys(this._query)) {
       const entry = this._query[key];
       const options = entry._options || el[entry.options];
-      this._polymerChange('query', key, options);
+      if (entry.skip !== true) {
+        this._polymerChange('query', key, options);
+      }
     }
     for (const key of Object.keys(this._subscription)) {
       const entry = this._subscription[key];
       const options = entry._options || el[entry.options];
-      this._polymerChange('subscription', key, options);
+      if (entry.skip !== true) {
+        this._polymerChange('subscription', key, options);
+      }
     }
   }
 
@@ -289,21 +293,15 @@ export const PolymerApolloMixin = (options, superclass) => class extends supercl
   }
 
   connectedCallback() {
-    super.connectedCallback();
     const apollo = this.apollo;
     this.$apollo = clone(this.$apollo);
     if (apollo) {
-      this.$apollo.attached = true;
-      this.$apollo.init(this);
+        this.$apollo.attached = true;
+        this.$apollo.init(this);
     }
-  }
-
-  ready() {
-    super.ready();
-    const apollo = this.apollo;
+    super.connectedCallback();
     if (apollo) {
-      this.$apollo.attached = true;
-      this.$apollo.start(this);
+        this.$apollo.start(this);
     }
   }
 
