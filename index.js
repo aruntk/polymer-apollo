@@ -1,1 +1,1 @@
-module.exports = require('./src/polymer-apollo.js');
+module.exports = require('./dist/polymer-apollo.js');

@@ -1,5 +1,7 @@
 > Note: For Polymer 1.x checkout branch [1.x](https://github.com/aruntk/polymer-apollo/tree/1.x)
 
+> Note: For Polymer 2.x checkout branch [2.x](https://github.com/aruntk/polymer-apollo/tree/2.x)
+
 # Polymer-Apollo
 
 
@@ -48,15 +50,15 @@
 ### Configuration
 
 ```js
-//config.js
-import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client';
+// config.js
+import { ApolloClient } from 'apollo-client';
+import { HttpLink } from 'apollo-link-http';
 
 // Create the apollo client
 export const apolloClient = new ApolloClient({
-  networkInterface: createNetworkInterface({
+  link: new HttpLink({
     uri: 'http://localhost:8080/graphql',
-    transportBatching: true,
-  })
+  }),
 });
 ```
 
